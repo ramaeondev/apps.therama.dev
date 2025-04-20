@@ -8,7 +8,10 @@
       "technologies": ["React", "TypeScript", "Tailwind CSS"],
       "githubUrl": "https://github.com/yourusername/task-management",
       "previewUrl": "https://task-management-demo.com",
-      "imageUrl": "/project-images/task-management.png"
+      "images": {
+        "web": "/project-images/task-management-web.png",
+        "mobile": "/project-images/task-management-mobile.png"
+      }
     },
     {
       "id": 2,
@@ -17,7 +20,10 @@
       "technologies": ["React", "Shadcn UI", "Tailwind"],
       "githubUrl": "https://github.com/yourusername/portfolio",
       "previewUrl": "https://portfolio-demo.com",
-      "imageUrl": "/project-images/portfolio.png"
+      "images": {
+        "web": "/project-images/portfolio-web.png",
+        "mobile": "/project-images/portfolio-mobile.png"
+      }
     },
     {
       "id": 3,
@@ -26,7 +32,10 @@
       "technologies": ["React", "Recharts", "React Query"],
       "githubUrl": "https://github.com/yourusername/dashboard",
       "previewUrl": "https://dashboard-demo.com",
-      "imageUrl": "/project-images/dashboard.png"
+      "images": {
+        "web": "/project-images/dashboard-web.png",
+        "mobile": "/project-images/dashboard-mobile.png"
+      }
     }
   ]
 }
