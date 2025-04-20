@@ -1,11 +1,10 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { ExternalLink, Github } from 'lucide-react';
 import projectsData from '../assets/projects.json';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import Header from '@/components/Header';
 
 interface Project {
   id: number;
@@ -80,15 +79,18 @@ const ProjectCard: React.FC<Project> = ({
 
 const Projects = () => {
   return (
-    <div className="min-h-screen bg-soft-gray p-4 sm:p-8">
-      <div className="container mx-auto">
-        <h1 className="text-4xl font-bold text-dark-purple mb-8 text-center">
-          My Projects
-        </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projectsData.projects.map((project) => (
-            <ProjectCard key={project.id} {...project} />
-          ))}
+    <div className="min-h-screen bg-soft-gray">
+      <Header />
+      <div className="p-4 sm:p-8">
+        <div className="container mx-auto">
+          <h1 className="text-4xl font-bold text-dark-purple mb-8 text-center">
+            My Projects
+          </h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projectsData.projects.map((project) => (
+              <ProjectCard key={project.id} {...project} />
+            ))}
+          </div>
         </div>
       </div>
     </div>
