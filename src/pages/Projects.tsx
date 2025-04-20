@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ExternalLink, Github } from 'lucide-react';
 import projectsData from '../assets/projects.json';
@@ -81,16 +82,19 @@ const Projects = () => {
   return (
     <div className="min-h-screen bg-soft-gray">
       <Header />
-      <div className="p-4 sm:p-8">
-        <div className="container mx-auto">
-          <h1 className="text-4xl font-bold text-dark-purple mb-8 text-center">
-            My Projects
+      <div className="container mx-auto px-4 sm:px-8">
+        <div className="text-center py-12 bg-soft-purple rounded-lg shadow-md mb-8">
+          <h1 className="text-4xl font-bold text-dark-purple mb-4">
+            Rama Reddy
           </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projectsData.projects.map((project) => (
-              <ProjectCard key={project.id} {...project} />
-            ))}
-          </div>
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
+            Serious Software Developer | Building Innovative Web Applications
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projectsData.projects.map((project) => (
+            <ProjectCard key={project.id} {...project} />
+          ))}
         </div>
       </div>
     </div>
