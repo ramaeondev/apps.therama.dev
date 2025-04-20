@@ -1,0 +1,32 @@
+
+{
+  "projects": [
+    {
+      "id": 1,
+      "title": "Task Management App",
+      "description": "A powerful task tracking and organization tool built with React and TypeScript",
+      "technologies": ["React", "TypeScript", "Tailwind CSS"],
+      "githubUrl": "https://github.com/yourusername/task-management",
+      "previewUrl": "https://task-management-demo.com",
+      "imageUrl": "/project-images/task-management.png"
+    },
+    {
+      "id": 2,
+      "title": "Personal Portfolio",
+      "description": "An elegant showcase of my web development skills and projects",
+      "technologies": ["React", "Shadcn UI", "Tailwind"],
+      "githubUrl": "https://github.com/yourusername/portfolio",
+      "previewUrl": "https://portfolio-demo.com",
+      "imageUrl": "/project-images/portfolio.png"
+    },
+    {
+      "id": 3,
+      "title": "Dashboard Application",
+      "description": "Comprehensive analytics and data visualization platform",
+      "technologies": ["React", "Recharts", "React Query"],
+      "githubUrl": "https://github.com/yourusername/dashboard",
+      "previewUrl": "https://dashboard-demo.com",
+      "imageUrl": "/project-images/dashboard.png"
+    }
+  ]
+}

@@ -1,75 +1,73 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Book, Monitor, Laptop } from 'lucide-react';
+import { ExternalLink, Github } from 'lucide-react';
+import projectsData from '../assets/projects.json';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
-const projects = [
-  {
-    id: 1,
-    title: 'Task Management App',
-    description: 'A powerful task tracking and organization tool',
-    technologies: ['React', 'TypeScript', 'Tailwind CSS'],
-    icon: Book
-  },
-  {
-    id: 2,
-    title: 'Personal Portfolio',
-    description: 'An elegant showcase of my web development skills',
-    technologies: ['React', 'Shadcn UI', 'Tailwind'],
-    icon: Laptop
-  },
-  {
-    id: 3,
-    title: 'Dashboard Application',
-    description: 'Comprehensive analytics and data visualization platform',
-    technologies: ['React', 'Recharts', 'React Query'],
-    icon: Monitor
-  }
-  // Add more projects as you build them
-];
-
-const ProjectCard: React.FC<(typeof projects)[0]> = ({ 
+const ProjectCard: React.FC<(typeof projectsData.projects)[0]> = ({ 
   title, 
   description, 
   technologies,
-  icon: Icon 
+  githubUrl,
+  previewUrl,
+  imageUrl
 }) => (
-  <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-    <div className="flex items-center mb-4">
-      <Icon className="w-8 h-8 mr-4 text-vivid-purple" />
+  <Card className="flex flex-col h-full">
+    <CardHeader>
+      <div className="aspect-video w-full overflow-hidden rounded-lg mb-4">
+        <img 
+          src={imageUrl} 
+          alt={title}
+          className="w-full h-full object-cover"
+        />
+      </div>
       <h3 className="text-xl font-bold text-dark-purple">{title}</h3>
-    </div>
-    <p className="text-gray-600 mb-4">{description}</p>
-    <div className="flex flex-wrap gap-2">
-      {technologies.map((tech) => (
-        <span 
-          key={tech} 
-          className="bg-soft-purple text-vivid-purple px-2 py-1 rounded-full text-sm"
-        >
-          {tech}
-        </span>
-      ))}
-    </div>
-    <div className="mt-4">
-      <Link 
-        to="#" 
-        className="bg-vivid-purple text-white px-4 py-2 rounded hover:bg-opacity-90 transition-colors"
+    </CardHeader>
+    <CardContent className="flex-grow">
+      <p className="text-gray-600 mb-4">{description}</p>
+      <div className="flex flex-wrap gap-2">
+        {technologies.map((tech) => (
+          <span 
+            key={tech} 
+            className="bg-soft-purple text-vivid-purple px-2 py-1 rounded-full text-sm"
+          >
+            {tech}
+          </span>
+        ))}
+      </div>
+    </CardContent>
+    <CardFooter className="flex gap-4">
+      <Button
+        variant="outline"
+        className="flex-1"
+        onClick={() => window.open(githubUrl, '_blank')}
       >
-        View Project
-      </Link>
-    </div>
-  </div>
+        <Github className="w-4 h-4 mr-2" />
+        GitHub
+      </Button>
+      <Button
+        variant="default"
+        className="flex-1"
+        onClick={() => window.open(previewUrl, '_blank')}
+      >
+        <ExternalLink className="w-4 h-4 mr-2" />
+        Preview
+      </Button>
+    </CardFooter>
+  </Card>
 );
 
 const Projects = () => {
   return (
-    <div className="min-h-screen bg-soft-gray p-8">
+    <div className="min-h-screen bg-soft-gray p-4 sm:p-8">
       <div className="container mx-auto">
         <h1 className="text-4xl font-bold text-dark-purple mb-8 text-center">
           My Projects
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {projectsData.projects.map((project) => (
             <ProjectCard key={project.id} {...project} />
           ))}
         </div>
