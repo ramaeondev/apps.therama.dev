@@ -1,5 +1,30 @@
 
 {
+  "profile": {
+    "name": "Rama Reddy",
+    "title": "Serious Software Developer | Building Innovative Web Applications",
+    "website": "https://therama.dev",
+    "socialLinks": [
+      {
+        "id": 1,
+        "platform": "github",
+        "url": "https://github.com/yourusername",
+        "label": "GitHub"
+      },
+      {
+        "id": 2,
+        "platform": "linkedin",
+        "url": "https://linkedin.com/in/yourusername",
+        "label": "LinkedIn"
+      },
+      {
+        "id": 3,
+        "platform": "twitter",
+        "url": "https://twitter.com/yourusername",
+        "label": "Twitter"
+      }
+    ]
+  },
   "projects": [
     {
       "id": 1,
