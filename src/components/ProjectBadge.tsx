@@ -1,41 +1,21 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ProjectStatus } from './ProjectCard';
 
 interface ProjectBadgeProps {
-  status: ProjectStatus;
+  statusName?: string;
+  statusClass?: string;
+  statusDescription?: string;
 }
 
-const statusConfig: Record<ProjectStatus, { label: string; className: string }> = {
-  'ready': { 
-    label: 'Ready for Production', 
-    className: 'bg-green-500 hover:bg-green-600'
-  },
-  'beta': { 
-    label: 'Beta', 
-    className: 'bg-blue-500 hover:bg-blue-600'
-  },
-  'archived': { 
-    label: 'Archived', 
-    className: 'bg-gray-500 hover:bg-gray-600'
-  },
-  'poc': { 
-    label: 'Proof of Concept', 
-    className: 'bg-amber-500 hover:bg-amber-600'
-  },
-  'in development': { 
-    label: 'In Development', 
-    className: 'bg-purple-500 hover:bg-purple-600'
-  }
-};
-
-const ProjectBadge: React.FC<ProjectBadgeProps> = ({ status }) => {
-  const config = statusConfig[status] || statusConfig['in development'];
-  
+const ProjectBadge: React.FC<ProjectBadgeProps> = ({ statusName, statusClass, statusDescription }) => {
+  if (!statusName) return null;
   return (
-    <Badge className={`${config.className} absolute top-4 right-4`}>
-      {config.label}
+    <Badge
+      className={`${statusClass || ''} absolute top-4 right-4`}
+      title={statusDescription}
+    >
+      {statusName}
     </Badge>
   );
 };

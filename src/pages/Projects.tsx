@@ -1,64 +1,101 @@
 
-import React from 'react';
-import { Github, Linkedin, Twitter } from 'lucide-react';
-import projectsData from '../assets/projects.json';
-import ProjectCard, { ProjectStatus } from '@/components/ProjectCard';
+import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
+import ProjectCard from '@/components/ProjectCard';
 
-const SocialLinks: React.FC = () => {
-  const getSocialIcon = (platform: string) => {
-    switch (platform) {
-      case 'github':
-        return <Github className="w-5 h-5" />;
-      case 'linkedin':
-        return <Linkedin className="w-5 h-5" />;
-      case 'twitter':
-        return <Twitter className="w-5 h-5" />;
-      default:
-        return null;
-    }
-  };
+interface ProjectAPI {
+  id: string;
+  title: string;
+  description: string;
+  technologies: string[];
+  github_url: string;
+  preview_url: string;
+  image_web: string;
+  image_mobile: string;
+  status_id: string;
+  current_version: string;
+  is_public: boolean;
+  readme_url: string;
+}
 
-  return (
-    <div className="flex justify-center gap-4 mt-4">
-      {projectsData.profile.socialLinks.map((link) => (
-        <a
-          key={link.id}
-          href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-dark-purple hover:text-vivid-purple transition-colors"
-          aria-label={link.label}
-        >
-          {getSocialIcon(link.platform)}
-        </a>
-      ))}
-    </div>
-  );
-};
+interface StatusAPI {
+  id: string;
+  name: string;
+  description: string;
+  class: string;
+}
 
-const Projects = () => {
+const Projects: React.FC = () => {
+  const [projects, setProjects] = useState<ProjectAPI[]>([]);
+  const [statuses, setStatuses] = useState<Record<string, StatusAPI>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoading(true);
+      const [projRes, statusRes] = await Promise.all([
+        fetch('https://api.therama.dev/functions/v1/get-projects'),
+        fetch('https://api.therama.dev/functions/v1/get-project-statuses'),
+      ]);
+      const projData: ProjectAPI[] = await projRes.json();
+      const statusRaw = await statusRes.json();
+      const statusArr: StatusAPI[] = statusRaw.statuses || [];
+      // Map status.id -> status
+      const statusMap: Record<string, StatusAPI> = {};
+      statusArr.forEach((s) => { statusMap[s.id] = s; });
+
+      setProjects(projData);
+      setStatuses(statusMap);
+      setLoading(false);
+    };
+    fetchAll();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-soft-gray">
+        <span className="text-2xl text-dark-purple">Loading projects...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-soft-gray">
       <Header />
       <div className="container mx-auto px-4 sm:px-8 py-8">
         <div className="text-center py-12 bg-soft-purple rounded-lg shadow-md mb-8">
           <h1 className="text-4xl font-bold text-dark-purple mb-4">
-            {projectsData.profile.name}
+            My Project Showcase
           </h1>
           <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-            {projectsData.profile.title}
+            All side-project applications and experiments
           </p>
-          <SocialLinks />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projectsData.projects.map((project) => (
-            <ProjectCard 
-              key={project.id} 
-              {...project} 
-              status={project.status as ProjectStatus}
-            />
-          ))}
+          {projects.map((project) => {
+            const statusObj = statuses[project.status_id];
+            return (
+              <ProjectCard
+                key={project.id}
+                id={project.id}
+                title={project.title}
+                description={project.description}
+                technologies={project.technologies}
+                githubUrl={project.github_url}
+                previewUrl={project.preview_url}
+                images={{
+                  web: project.image_web,
+                  mobile: project.image_mobile
+                }}
+                isPublic={project.is_public}
+                readmeUrl={project.readme_url}
+                version={project.current_version}
+                statusName={statusObj?.name}
+                statusClass={statusObj?.class}
+                statusDescription={statusObj?.description}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
