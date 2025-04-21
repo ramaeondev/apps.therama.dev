@@ -1,73 +1,104 @@
-# Welcome to your Lovable project
+# Apps Portfolio Platform
 
-## Project info
+A modern, responsive portfolio platform showcasing various applications and projects. Built with React, TypeScript, and Tailwind CSS, deployed on AWS infrastructure.
 
-**URL**: https://lovable.dev/projects/b6de484d-66e1-4b51-af55-5dd5541a11cd
+![Portfolio Platform](public/apps-therama-dev-large.png)
 
-## How can I edit this code?
+## 🚀 Features
 
-There are several ways of editing your application.
+- **Project Showcase**: Display all your applications with detailed information
+- **Live Status Updates**: Real-time project status tracking
+- **Deployment History**: Track all deployments with detailed information
+- **README Integration**: View project READMEs directly in the interface
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Dark/Light Mode**: Supports system theme preferences
 
-**Use Lovable**
+## 🛠 Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b6de484d-66e1-4b51-af55-5dd5541a11cd) and start prompting.
+- **Frontend Framework**: React with TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Build Tool**: Vite
+- **Deployment**: AWS (S3, CloudFront, CloudFlare)
+- **CI/CD**: GitHub Actions
+- **Database**: Supabase
+- **Analytics**: Google Analytics
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📦 Installation
 
-**Use your preferred IDE**
+```bash
+# Clone the repository
+git clone https://github.com/rmaeondev/apps.therama.dev.git
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# Navigate to project directory
+cd apps.therama.dev
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# Install dependencies
+npm install
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🔧 Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env` file in the root directory with the following variables:
 
-**Use GitHub Codespaces**
+```env
+VITE_API_URL=your_api_url
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_key
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🚀 Deployment
 
-## What technologies are used for this project?
+The application uses GitHub Actions for automated deployments. The workflow:
 
-This project is built with:
+1. Builds the application
+2. Deploys to AWS S3
+3. Invalidates CloudFront cache
+4. Updates project status
+5. Logs deployment information
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Manual Deployment
+```bash
+# Build the application
+npm run build
 
-## How can I deploy this project?
+# Deploy to AWS (requires AWS CLI configuration)
+aws s3 sync ./dist s3://your-bucket-name --delete
+```
 
-Simply open [Lovable](https://lovable.dev/projects/b6de484d-66e1-4b51-af55-5dd5541a11cd) and click on Share -> Publish.
+## 🔄 CI/CD Pipeline
 
-## Can I connect a custom domain to my Lovable project?
+The project includes a comprehensive GitHub Actions workflow that:
 
-Yes, you can!
+- Runs on push to main branch
+- Performs clean npm installation
+- Builds the application
+- Deploys to AWS S3
+- Invalidates CloudFront cache
+- Logs deployment status
+- Updates project version
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🤝 Contributing
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Contact
+
+Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
+Project Link: [https://apps.therama.dev](https://apps.therama.dev)
+
+## 🙏 Acknowledgments
+
+- [shadcn/ui](https://ui.shadcn.com/) for the beautiful UI components
+- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
+- [Vite](https://vitejs.dev/) for the blazing fast build tool
