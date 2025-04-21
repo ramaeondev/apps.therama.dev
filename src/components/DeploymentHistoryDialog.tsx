@@ -1,13 +1,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import ProjectBadge from './ProjectBadge';
 
 interface Deployment {
   id: string;
   project_id: string;
   version: string;
-  status: string; // This will not be used for deployment status.
+  status: string; // This is the project status string from deployments
   deployment_time: string;
   github_sha: string;
   github_ref: string;
@@ -63,12 +62,9 @@ const DeploymentHistoryDialog: React.FC<DeploymentHistoryDialogProps> = ({
       .catch(() => setLoading(false));
   }, [open, projectId]);
 
-  // For this modal, assume all deployments for this project have the same status_id;
-  // So we can use the parent projectId and let user see its status.
-  // If future API has status_id on each deployment, this can be trivially adjusted.
-
-  // Let's show the badge using the status info.
-  // Assume status_id is always available via deployments or props.
+  const findStatusByName = (statusName: string, statuses: Record<string, StatusAPI>): StatusAPI | undefined => {
+    return Object.values(statuses).find(status => status.name === statusName);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,16 +79,9 @@ const DeploymentHistoryDialog: React.FC<DeploymentHistoryDialogProps> = ({
             <p className="text-center text-gray-500">No deployment history available</p>
           ) : (
             deployments.map((deployment) => {
-              // Try to find status for this deployment
-              // We don't have status_id in deployments, so we best-effort use projectId
-              // For best results, pass status_id into this dialog via props in future.
-              // For now, use the first status in statuses as fallback if project status id is not known.
-              const statusObj: StatusAPI | undefined =
-                Object.values(statuses).find(() =>
-                  // In future, match deployment.status_id to statuses
-                  deployment.project_id === projectId // always true in map, but future-proofing
-                ) || Object.values(statuses)[0];
-
+              // Find project status by name
+              const projectStatusObj = findStatusByName(deployment.status, statuses);
+              
               // Deployment success/failure rendering
               const deploymentStatusColor = deployment.is_success ? 'text-green-600' : 'text-red-600';
               const deploymentStatusBg = deployment.is_success ? 'bg-green-100' : 'bg-red-100';
@@ -115,17 +104,26 @@ const DeploymentHistoryDialog: React.FC<DeploymentHistoryDialogProps> = ({
                     <p><span className="font-medium">Git Ref:</span> {deployment.github_ref}</p>
                     <p><span className="font-medium">Commit SHA:</span> {deployment.github_sha}</p>
                     <p><span className="font-medium">Commit:</span> {deployment.commit_message}</p>
-                    {/* Visual project status using badge color + text from statuses */}
+                    {/* Project status - from the status field in deployment */}
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="font-medium">Status:</span>
-                      {statusObj && (
-                        <span className={`px-2 py-0.5 rounded-full font-semibold text-xs ${statusObj.class}`} title={statusObj.description}>{statusObj.name}</span>
+                      <span className="font-medium">Project Status:</span>
+                      {projectStatusObj ? (
+                        <span className={`px-2 py-0.5 rounded-full font-semibold text-xs ${projectStatusObj.class}`}
+                              title={projectStatusObj.description}>
+                          {projectStatusObj.name}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full font-semibold text-xs bg-gray-100 text-gray-600">
+                          {deployment.status}
+                        </span>
                       )}
                     </div>
-                    {/* New deployment status visual */}
+                    {/* Deployment status - from is_success field */}
                     <div className="flex items-center gap-2 mt-1">
                       <span className="font-medium">Deployment Status:</span>
-                      <span className={`px-2 py-0.5 rounded-full font-semibold text-xs ${deploymentStatusBg} ${deploymentStatusColor}`}>{deployment.is_success ? 'Success' : 'Failed'}</span>
+                      <span className={`px-2 py-0.5 rounded-full font-semibold text-xs ${deploymentStatusBg} ${deploymentStatusColor}`}>
+                        {deployment.is_success ? 'Success' : 'Failed'}
+                      </span>
                     </div>
                     <p className="mt-2">
                       <span className="font-medium">Deployed URL:</span>{' '}
