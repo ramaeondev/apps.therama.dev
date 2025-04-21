@@ -2,7 +2,7 @@
 import React from 'react';
 import { Github, Linkedin, Twitter } from 'lucide-react';
 import projectsData from '../assets/projects.json';
-import ProjectCard from '@/components/ProjectCard';
+import ProjectCard, { ProjectStatus } from '@/components/ProjectCard';
 import Header from '@/components/Header';
 
 const SocialLinks: React.FC = () => {
@@ -53,7 +53,11 @@ const Projects = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projectsData.projects.map((project) => (
-            <ProjectCard key={project.id} {...project} />
+            <ProjectCard 
+              key={project.id} 
+              {...project} 
+              status={project.status as ProjectStatus}
+            />
           ))}
         </div>
       </div>

@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-
-type ProjectStatus = 'ready' | 'beta' | 'archived' | 'poc' | 'in development';
+import { ProjectStatus } from './ProjectCard';
 
 interface ProjectBadgeProps {
   status: ProjectStatus;

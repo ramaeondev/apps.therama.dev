@@ -24,6 +24,8 @@ interface Deployment {
   changes: string;
 }
 
+export type ProjectStatus = 'ready' | 'beta' | 'archived' | 'poc' | 'in development';
+
 interface Project {
   id: number;
   title: string;
@@ -38,7 +40,7 @@ interface Project {
   isPublic: boolean;
   readmeUrl: string;
   version: string;
-  status: 'ready' | 'beta' | 'archived' | 'poc' | 'in development';
+  status: ProjectStatus;
   deployments: Deployment[];
 }
 
