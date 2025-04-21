@@ -16,8 +16,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           {/* Redirect root path to /projects */}
-          <Route path="/" element={<Navigate to="/projects" replace />} />
-          <Route path="/projects" element={<Projects />} />
+          <Route path="/" element={<Projects />}/>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

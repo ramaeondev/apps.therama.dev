@@ -30,9 +30,7 @@ jobs:
             npm cache clean --force
             npm install        
         
-      - name: Build
-        run: npm run build
-
+     
       - name: Copy README and package.json to public
         run: |
           mkdir -p public/meta
@@ -66,6 +64,9 @@ jobs:
         with:
           name: deployment-status
           path: deployment-status.json
+      
+      - name: Build
+        run: npm run build  
         
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
