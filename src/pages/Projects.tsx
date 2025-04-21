@@ -60,45 +60,18 @@ const Projects: React.FC = () => {
         const statusMap: Record<string, StatusAPI> = {};
         statusArr.forEach((s) => { statusMap[s.id] = s; });
         
-        // Handle social links - ensure it's an array
+        // Parse social links response
         let socialData: SocialLink[] = [];
         try {
-          const socialText = await socialRes.text();
-          // Check if the response is actually SQL and not JSON
-          if (socialText.startsWith('INSERT INTO')) {
-            // Parse the SQL-like response to extract social links data
-            const hardcodedLinks: SocialLink[] = [
-              {
-                id: '088c5d80-3aff-4b3a-9d06-50b636ed225c',
-                platform: 'github',
-                url: 'https://github.com/ramaeon',
-                label: 'GitHub',
-                created_at: '2025-04-20 16:32:09.553371+00'
-              },
-              {
-                id: '2ddbc931-7df8-4492-a4fd-a3c639796fcb',
-                platform: 'twitter',
-                url: 'https://twitter.com/ramaeon',
-                label: 'Twitter',
-                created_at: '2025-04-20 16:32:09.553371+00'
-              },
-              {
-                id: '573d4894-0fbd-42cc-9912-77f4c141fd28',
-                platform: 'linkedin',
-                url: 'https://linkedin.com/in/ramaeon',
-                label: 'LinkedIn',
-                created_at: '2025-04-20 16:32:09.553371+00'
-              }
-            ];
-            socialData = hardcodedLinks;
-          } else {
-            // Try to parse as JSON
-            const parsedData = JSON.parse(socialText);
-            socialData = Array.isArray(parsedData) ? parsedData : [];
+          const socialRaw = await socialRes.json();
+          // Check if the response has a links property (from the updated API)
+          if (socialRaw && socialRaw.links && Array.isArray(socialRaw.links)) {
+            socialData = socialRaw.links;
+          } else if (Array.isArray(socialRaw)) {
+            socialData = socialRaw;
           }
         } catch (error) {
           console.error('Error parsing social links:', error);
-          // Fallback to empty array
           socialData = [];
         }
 
@@ -136,7 +109,7 @@ const Projects: React.FC = () => {
             All side-project applications and experiments
           </p>
           <div className="flex items-center justify-center gap-4 mt-4">
-            {Array.isArray(socialLinks) && socialLinks.map((link) => (
+            {socialLinks && socialLinks.length > 0 && socialLinks.map((link) => (
               <a
                 key={link.id}
                 href={link.url}

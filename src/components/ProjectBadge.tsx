@@ -11,9 +11,10 @@ interface ProjectBadgeProps {
 const ProjectBadge: React.FC<ProjectBadgeProps> = ({ statusName, statusClass, statusDescription }) => {
   if (!statusName) return null;
   
+  // Apply the class directly without additional className concatenation
   return (
     <Badge
-      className={`absolute top-4 right-4 ${statusClass || ''}`}
+      className={`absolute top-4 right-4 ${statusClass}`}
       title={statusDescription}
     >
       {statusName}
