@@ -1,8 +1,27 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
+  "project_id": "b03ee572-45f4-4e0a-ab29-0ac7417cf0b8",
+  "status": "Under Development",
+  "description": "A Vite + React + TypeScript + Tailwind CSS + shadcn/ui template",
+  "author": "Ramaeon",
+  "license": "MIT",
+  "homepage": "apps.therama.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ramaeondev/apps.therama.dev"
+  },
+  "keywords": [
+    "vite",
+    "react",
+    "typescript",
+    "tailwindcss",
+    "shadcn/ui"
+  ],
+  "update_project_version": "https://api.therama.dev/functions/v1/update-project-version",
+  "log_deployment": "https://api.therama.dev/functions/v1/log-deployment",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

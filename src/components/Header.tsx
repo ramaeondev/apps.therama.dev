@@ -11,7 +11,7 @@ const Header = () => {
           className="flex items-center gap-2 w-fit hover:opacity-90 transition-opacity"
         >
           <img 
-            src="/lovable-uploads/1d25954a-c658-4965-9d10-75cc74c96885.png" 
+            src="/logo.png" 
             alt="The Rama Dev" 
             className="w-8 h-8" 
           />
