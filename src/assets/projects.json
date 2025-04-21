@@ -36,7 +36,31 @@
       "images": {
         "web": "/project-images/task-management-web.png",
         "mobile": "/project-images/task-management-mobile.png"
-      }
+      },
+      "isPublic": true,
+      "readmeUrl": "https://raw.githubusercontent.com/yourusername/task-management/main/README.md",
+      "version": "1.2.3",
+      "status": "ready",
+      "deployments": [
+        {
+          "id": 1,
+          "date": "2025-03-15",
+          "version": "1.2.3",
+          "environment": "production",
+          "status": "success",
+          "commitId": "a1b2c3d",
+          "changes": "Added dark mode support and fixed user authentication bugs"
+        },
+        {
+          "id": 2,
+          "date": "2025-02-28",
+          "version": "1.2.0",
+          "environment": "production",
+          "status": "success",
+          "commitId": "e4f5g6h",
+          "changes": "Implemented drag and drop functionality for tasks"
+        }
+      ]
     },
     {
       "id": 2,
@@ -48,7 +72,22 @@
       "images": {
         "web": "/project-images/portfolio-web.png",
         "mobile": "/project-images/portfolio-mobile.png"
-      }
+      },
+      "isPublic": false,
+      "readmeUrl": "https://raw.githubusercontent.com/yourusername/portfolio/main/README.md",
+      "version": "2.0.1",
+      "status": "beta",
+      "deployments": [
+        {
+          "id": 1,
+          "date": "2025-04-10",
+          "version": "2.0.1",
+          "environment": "production",
+          "status": "success",
+          "commitId": "j7k8l9m",
+          "changes": "Updated project showcase and improved mobile responsiveness"
+        }
+      ]
     },
     {
       "id": 3,
@@ -60,7 +99,31 @@
       "images": {
         "web": "/project-images/dashboard-web.png",
         "mobile": "/project-images/dashboard-mobile.png"
-      }
+      },
+      "isPublic": true,
+      "readmeUrl": "https://raw.githubusercontent.com/yourusername/dashboard/main/README.md",
+      "version": "0.9.5",
+      "status": "in development",
+      "deployments": [
+        {
+          "id": 1,
+          "date": "2025-04-01",
+          "version": "0.9.5",
+          "environment": "staging",
+          "status": "success",
+          "commitId": "n1o2p3q",
+          "changes": "Added new chart visualizations and filter options"
+        },
+        {
+          "id": 2, 
+          "date": "2025-03-20",
+          "version": "0.9.0",
+          "environment": "staging",
+          "status": "failed",
+          "commitId": "r4s5t6u",
+          "changes": "Attempted integration with external data sources"
+        }
+      ]
     }
   ]
 }
