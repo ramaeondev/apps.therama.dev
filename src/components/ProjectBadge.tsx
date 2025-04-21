@@ -12,7 +12,7 @@ const ProjectBadge: React.FC<ProjectBadgeProps> = ({ statusName, statusClass, st
   if (!statusName) return null;
   return (
     <Badge
-      className={`${statusClass || ''} absolute top-4 right-4`}
+      className={`absolute top-4 right-4 ${statusClass || ''}`}
       title={statusDescription}
     >
       {statusName}
@@ -21,3 +21,4 @@ const ProjectBadge: React.FC<ProjectBadgeProps> = ({ statusName, statusClass, st
 };
 
 export default ProjectBadge;
+
