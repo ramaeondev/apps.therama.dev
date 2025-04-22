@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Github, EyeOff, ExternalLink, Clock, Info, Calendar, FileText } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
@@ -98,10 +97,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 h-8"
+              className="flex-1 h-8 justify-center gap-1"
               onClick={() => window.open(githubUrl, '_blank')}
             >
-              <Github className="h-4 w-4 md:mr-2" />
+              <Github className="h-4 w-4" />
               <span className="hidden md:inline">GitHub</span>
             </Button>
           ) : (
@@ -111,10 +110,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-8"
+                    className="flex-1 h-8 justify-center gap-1"
                     disabled
                   >
-                    <EyeOff className="h-4 w-4 md:mr-2" />
+                    <EyeOff className="h-4 w-4" />
                     <span className="hidden md:inline">Private</span>
                   </Button>
                 </TooltipTrigger>
@@ -129,10 +128,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <Button
             variant="default"
             size="sm"
-            className="flex-1 h-8"
+            className="flex-1 h-8 justify-center gap-1"
             onClick={() => window.open(previewUrl, '_blank')}
           >
-            <ExternalLink className="h-4 w-4 md:mr-2" />
+            <ExternalLink className="h-4 w-4" />
             <span className="hidden md:inline">Preview</span>
           </Button>
 
@@ -140,10 +139,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 h-8"
+            className="flex-1 h-8 justify-center gap-1"
             onClick={() => setShowReadmeDialog(true)}
           >
-            <FileText className="h-4 w-4 md:mr-2" />
+            <FileText className="h-4 w-4" />
             <span className="hidden md:inline">README</span>
           </Button>
 
@@ -151,10 +150,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 h-8"
+            className="flex-1 h-8 justify-center gap-1"
             onClick={() => setShowDeployDialog(true)}
           >
-            <Info className="h-4 w-4 md:mr-2" />
+            <Info className="h-4 w-4" />
             <span className="hidden md:inline">Deployments</span>
           </Button>
         </div>

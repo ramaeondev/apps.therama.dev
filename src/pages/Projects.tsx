@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import ProjectCard from '@/components/ProjectCard';
@@ -57,8 +56,12 @@ const Projects: React.FC = () => {
         
         const projData: ProjectAPI[] = await projRes.json();
         
-        // Sort projects by order
-        projData.sort((a, b) => (a.order || 999) - (b.order || 999));
+        // Sort projects by order property
+        const sortedProjects = [...projData].sort((a, b) => {
+          const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
+          const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        });
         
         const statusRaw = await statusRes.json();
         const statusArr: StatusAPI[] = statusRaw.statuses || [];
@@ -82,7 +85,7 @@ const Projects: React.FC = () => {
           socialData = [];
         }
 
-        setProjects(projData);
+        setProjects(sortedProjects);
         setStatuses(statusMap);
         setSocialLinks(socialData);
       } catch (error) {
