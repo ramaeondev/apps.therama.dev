@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Github, EyeOff, ExternalLink, Clock, Info, Calendar, FileText } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
@@ -66,27 +67,27 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           />
         </div>
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-bold text-dark-purple">{title}</h3>
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+          <h3 className="text-xl font-bold text-dark-purple dark:text-gray-100">{title}</h3>
+          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
             <Clock className="h-3 w-3" />
             <span>v{version}</span>
           </div>
         </div>
       </CardHeader>
       <CardContent className="flex-grow p-4 pt-0">
-        <p className="text-gray-600 mb-3 text-sm">{description}</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm">{description}</p>
         <div className="flex flex-wrap gap-1 mb-3">
           {technologies.map(tech => (
             <span
               key={tech}
-              className="bg-soft-purple text-vivid-purple px-2 py-0.5 rounded-full text-xs"
+              className="bg-soft-purple text-vivid-purple dark:bg-gray-700 dark:text-gray-200 px-2 py-0.5 rounded-full text-xs"
             >
               {tech}
             </span>
           ))}
         </div>
         {lastDeployedAt && (
-          <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
             <Calendar className="h-3 w-3" />
             <span>Last deployed: {formattedDate}</span>
           </div>
@@ -156,26 +157,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <Info className="h-4 w-4 md:mr-2" />
             <span className="hidden md:inline">Deployments</span>
           </Button>
-          
-          {showReadmeDialog && (
-            <ReadmeDialog 
-              title={title} 
-              readmeUrl={readmeUrl} 
-              open={showReadmeDialog}
-              onOpenChange={setShowReadmeDialog}
-            />
-          )}
-          
-          {showDeployDialog && (
-            <DeploymentHistoryDialog
-              title={title}
-              projectId={id}
-              open={showDeployDialog}
-              onOpenChange={setShowDeployDialog}
-            />
-          )}
         </div>
       </CardContent>
+      
+      <ReadmeDialog 
+        title={title} 
+        readmeUrl={readmeUrl} 
+        open={showReadmeDialog}
+        onOpenChange={setShowReadmeDialog}
+      />
+      
+      <DeploymentHistoryDialog
+        title={title}
+        projectId={id}
+        open={showDeployDialog}
+        onOpenChange={setShowDeployDialog}
+      />
     </Card>
   );
 };
