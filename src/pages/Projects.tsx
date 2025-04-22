@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import ProjectCard from '@/components/ProjectCard';
 import { toast } from "sonner";
 import { Github, Twitter, Linkedin } from 'lucide-react';
+import projectsData from '../assets/projects.json';
 
 interface ProjectAPI {
   id: string;
@@ -18,6 +19,8 @@ interface ProjectAPI {
   current_version: string;
   is_public: boolean;
   readme_url: string;
+  order: number;
+  last_deployed_at?: string;
 }
 
 interface StatusAPI {
@@ -40,6 +43,7 @@ const Projects: React.FC = () => {
   const [statuses, setStatuses] = useState<Record<string, StatusAPI>>({});
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [loading, setLoading] = useState(true);
+  const developerName = projectsData.profile?.name || 'Rama Reddy';
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -53,6 +57,9 @@ const Projects: React.FC = () => {
         
         const projData: ProjectAPI[] = await projRes.json();
         
+        // Sort projects by order
+        projData.sort((a, b) => (a.order || 999) - (b.order || 999));
+        
         const statusRaw = await statusRes.json();
         const statusArr: StatusAPI[] = statusRaw.statuses || [];
         
@@ -64,7 +71,7 @@ const Projects: React.FC = () => {
         let socialData: SocialLink[] = [];
         try {
           const socialRaw = await socialRes.json();
-          // Check if the response has a links property (from the updated API)
+          // Check if the response has a links property
           if (socialRaw && socialRaw.links && Array.isArray(socialRaw.links)) {
             socialData = socialRaw.links;
           } else if (Array.isArray(socialRaw)) {
@@ -91,31 +98,31 @@ const Projects: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-soft-gray">
-        <span className="text-2xl text-dark-purple">Loading projects...</span>
+      <div className="min-h-screen flex items-center justify-center bg-soft-gray dark:bg-gray-900">
+        <span className="text-2xl text-dark-purple dark:text-white">Loading projects...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-soft-gray">
+    <div className="min-h-screen bg-soft-gray dark:bg-gray-900 transition-colors duration-200">
       <Header />
       <div className="container mx-auto px-4 sm:px-8 py-8">
-        <div className="text-center py-12 bg-soft-purple rounded-lg shadow-md mb-8">
-          <h1 className="text-4xl font-bold text-dark-purple mb-4">
-            My Project Showcase
+        <div className="text-center py-10 bg-soft-purple dark:bg-dark-purple rounded-lg shadow-md mb-8 transition-colors duration-200">
+          <h1 className="text-4xl font-bold text-dark-purple dark:text-white mb-4">
+            {developerName}'s Project Showcase
           </h1>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-            All side-project applications and experiments
+          <p className="text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
+            A collection of applications, websites, and experiments
           </p>
-          <div className="flex items-center justify-center gap-4 mt-4">
-            {socialLinks && socialLinks.length > 0 && socialLinks.map((link) => (
+          <div className="flex items-center justify-center gap-4 mt-6">
+            {Array.isArray(socialLinks) && socialLinks.length > 0 && socialLinks.map((link) => (
               <a
                 key={link.id}
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-dark-purple hover:text-vivid-purple transition-colors"
+                className="text-dark-purple dark:text-white hover:text-vivid-purple dark:hover:text-vivid-purple transition-colors"
                 aria-label={link.label}
               >
                 {link.platform === 'github' && <Github size={24} />}
@@ -147,6 +154,7 @@ const Projects: React.FC = () => {
                 statusName={statusObj?.name}
                 statusClass={statusObj?.class}
                 statusDescription={statusObj?.description}
+                lastDeployedAt={project.last_deployed_at}
               />
             );
           })}

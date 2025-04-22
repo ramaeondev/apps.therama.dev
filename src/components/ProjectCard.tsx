@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { Github, EyeOff, ExternalLink, Clock, Info } from 'lucide-react';
+import { Github, EyeOff, ExternalLink, Clock, Info, Calendar } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ProjectBadge from './ProjectBadge';
 import ReadmeDialog from './ReadmeDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
-
+import { format } from 'date-fns';
 import DeploymentHistoryDialog from './DeploymentHistoryDialog';
 
 interface ProjectCardProps {
@@ -27,6 +27,7 @@ interface ProjectCardProps {
   statusName?: string;
   statusClass?: string;
   statusDescription?: string;
+  lastDeployedAt?: string;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -43,16 +44,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   statusName,
   statusClass,
   statusDescription,
+  lastDeployedAt,
 }) => {
   const isMobile = useIsMobile();
   const imageUrl = isMobile ? images.mobile : images.web;
   const [showDeployDialog, setShowDeployDialog] = useState(false);
+  
+  const formattedDate = lastDeployedAt 
+    ? format(new Date(lastDeployedAt), 'MMM dd, yyyy h:mm a')
+    : 'Not deployed yet';
 
   return (
-    <Card className="flex flex-col h-full relative">
+    <Card className="flex flex-col h-full relative overflow-hidden hover:shadow-md transition-all">
       <ProjectBadge statusName={statusName} statusClass={statusClass} statusDescription={statusDescription} />
-      <CardHeader>
-        <div className="aspect-video w-full overflow-hidden rounded-lg mb-4">
+      <CardHeader className="p-4 pb-2">
+        <div className="aspect-video w-full overflow-hidden rounded-lg mb-3">
           <img
             src={imageUrl}
             alt={title}
@@ -61,32 +67,39 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold text-dark-purple">{title}</h3>
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-gray-500" />
-            <span className="text-sm text-gray-500">v{version}</span>
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Clock className="h-3 w-3" />
+            <span>v{version}</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <p className="text-gray-600 mb-4">{description}</p>
-        <div className="flex flex-wrap gap-2 mb-4">
+      <CardContent className="flex-grow p-4 pt-0">
+        <p className="text-gray-600 mb-3 text-sm">{description}</p>
+        <div className="flex flex-wrap gap-1 mb-3">
           {technologies.map(tech => (
             <span
               key={tech}
-              className="bg-soft-purple text-vivid-purple px-2 py-1 rounded-full text-sm"
+              className="bg-soft-purple text-vivid-purple px-2 py-0.5 rounded-full text-xs"
             >
               {tech}
             </span>
           ))}
         </div>
-        <div className="flex gap-2 mt-4">
+        {lastDeployedAt && (
+          <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+            <Calendar className="h-3 w-3" />
+            <span>Last deployed: {formattedDate}</span>
+          </div>
+        )}
+        <div className="flex gap-2 mt-2">
           <ReadmeDialog title={title} readmeUrl={readmeUrl} />
           <Button
             variant="outline"
-            className="flex items-center gap-2"
+            size="sm"
+            className="flex items-center gap-1 text-xs h-8"
             onClick={() => setShowDeployDialog(true)}
           >
-            <Info className="w-4 h-4" />
+            <Info className="w-3 h-3" />
             Deployments
           </Button>
           {showDeployDialog && (
@@ -99,14 +112,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex gap-4">
+      <CardFooter className="flex gap-2 p-4 pt-0">
         {isPublic ? (
           <Button
             variant="outline"
-            className="flex-1"
+            size="sm"
+            className="flex-1 h-8 text-xs"
             onClick={() => window.open(githubUrl, '_blank')}
           >
-            <Github className="w-4 h-4 mr-2" />
+            <Github className="w-3 h-3 mr-1" />
             GitHub
           </Button>
         ) : (
@@ -115,10 +129,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex-1 opacity-60"
+                  size="sm"
+                  className="flex-1 opacity-60 h-8 text-xs"
                   disabled
                 >
-                  <EyeOff className="w-4 h-4 mr-2" />
+                  <EyeOff className="w-3 h-3 mr-1" />
                   Private
                 </Button>
               </TooltipTrigger>
@@ -130,10 +145,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         )}
         <Button
           variant="default"
-          className="flex-1"
+          size="sm"
+          className="flex-1 h-8 text-xs"
           onClick={() => window.open(previewUrl, '_blank')}
         >
-          <ExternalLink className="w-4 h-4 mr-2" />
+          <ExternalLink className="w-3 h-3 mr-1" />
           Preview
         </Button>
       </CardFooter>

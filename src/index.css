@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,19 +36,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -98,4 +92,24 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.bg-soft-gray {
+  @apply bg-[#F1F0FB] dark:bg-gray-900;
+}
+
+.text-dark-purple {
+  @apply text-[#1A1F2C] dark:text-white;
+}
+
+.bg-soft-purple {
+  @apply bg-[#E5DEFF] dark:bg-gray-800;
+}
+
+.text-vivid-purple {
+  @apply text-[#8B5CF6] dark:text-[#a78bfa];
+}
+
+.bg-dark-purple {
+  @apply bg-[#1A1F2C] dark:bg-gray-900;
 }

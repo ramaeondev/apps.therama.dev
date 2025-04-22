@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 
 interface ProjectBadgeProps {
   statusName?: string;
@@ -11,14 +10,16 @@ interface ProjectBadgeProps {
 const ProjectBadge: React.FC<ProjectBadgeProps> = ({ statusName, statusClass, statusDescription }) => {
   if (!statusName) return null;
   
-  // Apply the class directly without additional className concatenation
+  // Extract the background class from statusClass if it exists
+  const backgroundClass = statusClass?.split(' ')[0] || '';
+  
   return (
-    <Badge
-      className={`absolute top-4 right-4 ${statusClass}`}
+    <div 
+      className={`absolute top-4 right-4 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${backgroundClass} text-white`}
       title={statusDescription}
     >
       {statusName}
-    </Badge>
+    </div>
   );
 };
 
