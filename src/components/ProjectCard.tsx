@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Github, EyeOff, ExternalLink, Clock, Info, Calendar } from 'lucide-react';
+import { Github, EyeOff, ExternalLink, Clock, Info, Calendar, FileText } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -49,6 +48,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const isMobile = useIsMobile();
   const imageUrl = isMobile ? images.mobile : images.web;
   const [showDeployDialog, setShowDeployDialog] = useState(false);
+  const [showReadmeDialog, setShowReadmeDialog] = useState(false);
   
   const formattedDate = lastDeployedAt 
     ? format(new Date(lastDeployedAt), 'MMM dd, yyyy h:mm a')
@@ -91,17 +91,81 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <span>Last deployed: {formattedDate}</span>
           </div>
         )}
-        <div className="flex gap-2 mt-2">
-          <ReadmeDialog title={title} readmeUrl={readmeUrl} />
+        <div className="flex gap-2 mt-4">
+          {/* GitHub Button */}
+          {isPublic ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 h-8"
+              onClick={() => window.open(githubUrl, '_blank')}
+            >
+              <Github className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">GitHub</span>
+            </Button>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-8"
+                    disabled
+                  >
+                    <EyeOff className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">Private</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>This is a private repository</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
+          {/* Preview Button */}
+          <Button
+            variant="default"
+            size="sm"
+            className="flex-1 h-8"
+            onClick={() => window.open(previewUrl, '_blank')}
+          >
+            <ExternalLink className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Preview</span>
+          </Button>
+
+          {/* README Button */}
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 text-xs h-8"
+            className="flex-1 h-8"
+            onClick={() => setShowReadmeDialog(true)}
+          >
+            <FileText className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">README</span>
+          </Button>
+
+          {/* Deployments Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 h-8"
             onClick={() => setShowDeployDialog(true)}
           >
-            <Info className="w-3 h-3" />
-            Deployments
+            <Info className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Deployments</span>
           </Button>
+          
+          {showReadmeDialog && (
+            <ReadmeDialog 
+              title={title} 
+              readmeUrl={readmeUrl} 
+              open={showReadmeDialog}
+              onOpenChange={setShowReadmeDialog}
+            />
+          )}
+          
           {showDeployDialog && (
             <DeploymentHistoryDialog
               title={title}
@@ -112,47 +176,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex gap-2 p-4 pt-0">
-        {isPublic ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 h-8 text-xs"
-            onClick={() => window.open(githubUrl, '_blank')}
-          >
-            <Github className="w-3 h-3 mr-1" />
-            GitHub
-          </Button>
-        ) : (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 opacity-60 h-8 text-xs"
-                  disabled
-                >
-                  <EyeOff className="w-3 h-3 mr-1" />
-                  Private
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>This is a private repository - GitHub link is disabled</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-        <Button
-          variant="default"
-          size="sm"
-          className="flex-1 h-8 text-xs"
-          onClick={() => window.open(previewUrl, '_blank')}
-        >
-          <ExternalLink className="w-3 h-3 mr-1" />
-          Preview
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
