@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import ProjectCard from '@/components/ProjectCard';
@@ -56,7 +57,7 @@ const Projects: React.FC = () => {
         
         const projData: ProjectAPI[] = await projRes.json();
         
-        // Sort projects by order property
+        // Sort projects by order property, handling undefined orders
         const sortedProjects = [...projData].sort((a, b) => {
           const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
           const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
