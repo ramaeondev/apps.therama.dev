@@ -43,7 +43,7 @@ const Projects: React.FC = () => {
   const [statuses, setStatuses] = useState<Record<string, StatusAPI>>({});
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [loading, setLoading] = useState(true);
-  const developerName = projectsData.profile?.name || 'Rama Reddy';
+  const developerName = projectsData.profile?.name;
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -114,10 +114,10 @@ const Projects: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-8 py-8">
         <div className="text-center py-10 bg-soft-purple dark:bg-dark-purple rounded-lg shadow-md mb-8 transition-colors duration-200">
           <h1 className="text-4xl font-bold text-dark-purple dark:text-white mb-4">
-            {developerName}'s Project Showcase
+              Digital Innovation Lab
           </h1>
           <p className="text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
-            A collection of applications, websites, and experiments
+          Exploring the intersection of code, creativity, and cutting-edge technology.
           </p>
           <div className="flex items-center justify-center gap-4 mt-6">
             {Array.isArray(socialLinks) && socialLinks.length > 0 && socialLinks.map((link) => (

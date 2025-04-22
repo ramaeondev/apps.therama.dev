@@ -56,7 +56,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <Card className="flex flex-col h-full relative overflow-hidden hover:shadow-md transition-all">
-      <ProjectBadge statusName={statusName} statusClass={statusClass} statusDescription={statusDescription} />
+      {/* <ProjectBadge statusName={statusName} statusClass={statusClass} statusDescription={statusDescription} /> */}
       <CardHeader className="p-4 pb-2">
         <div className="aspect-video w-full overflow-hidden rounded-lg mb-3">
           <img
