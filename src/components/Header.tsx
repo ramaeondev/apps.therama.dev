@@ -17,11 +17,11 @@ const Header = () => {
           className="flex items-center gap-2 w-fit hover:opacity-90 transition-opacity"
         >
           <img 
-            src="/public/lovable-uploads/c39b7e1f-38bb-4aa2-8ea1-b602b9bd43fc.png" 
-            alt={developerName} 
+            src="/logo.png" 
+            alt="The Rama Dev" 
             className="w-8 h-8" 
           />
-          <span className="text-xl font-semibold">{developerName}'s Projects</span>
+          <span className="text-xl font-semibold">therama.dev</span>
         </a>
         
         <Button
