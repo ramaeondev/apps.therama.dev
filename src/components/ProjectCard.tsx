@@ -9,6 +9,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import DeploymentHistoryDialog from './DeploymentHistoryDialog';
 import StatusBadge from './StatusBadge';
+import { useS3Url } from '@/hooks/useS3Url';
 
 interface ProjectCardProps {
   id: string;
@@ -47,50 +48,56 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   lastDeployedAt,
 }) => {
   const isMobile = useIsMobile();
-  const imageUrl = isMobile ? images.mobile : images.web;
+  // Fetch the right S3 URL for image (web or mobile)
+  const resolvedImageUrl = useS3Url(isMobile ? images.mobile : images.web);
+
   const [showDeployDialog, setShowDeployDialog] = useState(false);
   const [showReadmeDialog, setShowReadmeDialog] = useState(false);
 
-  const formattedDate = lastDeployedAt 
+  const formattedDate = lastDeployedAt
     ? format(new Date(lastDeployedAt), 'MMM dd, yyyy h:mm a')
     : 'Not deployed yet';
 
   return (
     <Card className="flex flex-col h-full relative overflow-hidden hover:shadow-md transition-all">
       <CardHeader className="p-4 pb-0">
-        <div className="aspect-video w-full overflow-hidden rounded-lg mb-2">
+        <div className="aspect-video w-full overflow-hidden rounded-lg mb-1">
+          {/* Use a fallback if S3 URL is not loaded */}
           <img
-            src={imageUrl}
+            src={resolvedImageUrl || ""}
             alt={title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover bg-gray-200 dark:bg-gray-700"
+            style={{ minHeight: 100 }}
           />
         </div>
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-bold text-dark-purple dark:text-gray-100">{title}</h3>
+          <h3 className="text-xl font-bold text-dark-purple dark:text-gray-100 leading-tight">{title}</h3>
           <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
             <Clock className="h-3 w-3" />
             <span>v{version}</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-2 flex flex-col gap-1 flex-grow">
-        {/* Project status badge - positioned at the top of content */}
-        <div className="mb-1">
-          <StatusBadge 
-            statusName={statusName} 
-            statusClass={statusClass}
-            statusDescription={statusDescription}
-          />
-        </div>
-        
-        {/* Project description - reduced spacing */}
-        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-1"
-           title={description}>
+
+      <CardContent className="p-4 pt-2 flex flex-col flex-grow gap-0">
+        {/* Always show StatusBadge right below title */}
+        <StatusBadge
+          statusName={statusName}
+          statusClass={statusClass}
+          statusDescription={statusDescription}
+        />
+
+        {/* Description w/ minimal space above and below */}
+        <p
+          className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-0 mt-1"
+          title={description}
+          style={{ minHeight: 40 }}
+        >
           {description}
         </p>
-        
-        {/* Tech badges - reduced spacing */}
-        <div className="flex flex-wrap gap-1 mb-1">
+
+        {/* Tech badges */}
+        <div className="flex flex-wrap gap-1 mt-1 mb-2">
           {technologies.map(tech => (
             <span
               key={tech}
@@ -100,12 +107,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             </span>
           ))}
         </div>
-        
-        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
+
+        {/* Deployed date info */}
+        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2 mt-0">
           <Calendar className="h-3 w-3" />
           <span>Last deployed: {formattedDate}</span>
         </div>
-        
+
+        {/* Buttons */}
         <div className="flex gap-2 mt-auto">
           {/* GitHub Button */}
           {isPublic ? (
@@ -138,6 +147,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               </Tooltip>
             </TooltipProvider>
           )}
+
           {/* Preview Button */}
           <Button
             variant="default"
@@ -170,9 +180,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </Button>
         </div>
       </CardContent>
-      <ReadmeDialog 
-        title={title} 
-        readmeUrl={readmeUrl} 
+      <ReadmeDialog
+        title={title}
+        readmeUrl={readmeUrl}
         open={showReadmeDialog}
         onOpenChange={setShowReadmeDialog}
       />
