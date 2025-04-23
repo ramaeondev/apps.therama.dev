@@ -57,7 +57,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <Card className="flex flex-col h-full relative overflow-hidden hover:shadow-md transition-all">
-      <CardHeader className="p-4 pb-2">
+      <CardHeader className="p-4 pb-0">
         <div className="aspect-video w-full overflow-hidden rounded-lg mb-2">
           <img
             src={imageUrl}
@@ -65,7 +65,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold text-dark-purple dark:text-gray-100">{title}</h3>
           <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
             <Clock className="h-3 w-3" />
@@ -73,8 +73,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow p-4 pt-0 flex flex-col gap-2">
-        {/* Project status badge */}
+      <CardContent className="p-4 pt-2 flex flex-col gap-1 flex-grow">
+        {/* Project status badge - positioned at the top of content */}
         <div className="mb-1">
           <StatusBadge 
             statusName={statusName} 
@@ -83,16 +83,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           />
         </div>
         
-        {/* Project description */}
-        <p
-          className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3"
-          title={description}
-        >
+        {/* Project description - reduced spacing */}
+        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-1"
+           title={description}>
           {description}
         </p>
         
-        {/* Tech badges */}
-        <div className="flex flex-wrap gap-1 mt-1">
+        {/* Tech badges - reduced spacing */}
+        <div className="flex flex-wrap gap-1 mb-1">
           {technologies.map(tech => (
             <span
               key={tech}
@@ -103,12 +101,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           ))}
         </div>
         
-        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
+        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
           <Calendar className="h-3 w-3" />
           <span>Last deployed: {formattedDate}</span>
         </div>
         
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-2 mt-auto">
           {/* GitHub Button */}
           {isPublic ? (
             <Button

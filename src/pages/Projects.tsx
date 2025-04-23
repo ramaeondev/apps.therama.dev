@@ -157,12 +157,11 @@ const Projects: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => {
             const statusObj = statuses[project.status_id];
-            console.log("Project status mapping:", {
-              projectId: project.id,
-              projectTitle: project.title,
-              statusId: project.status_id,
-              statusObj: statusObj
-            });
+            
+            // Add console logs to debug status issues
+            console.log(`Project: ${project.title}, Status ID: ${project.status_id}`);
+            console.log('Status object:', statusObj);
+            
             return (
               <ProjectCard
                 key={project.id}
