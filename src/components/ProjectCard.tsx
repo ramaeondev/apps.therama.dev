@@ -55,7 +55,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     : 'Not deployed yet';
 
   // Description height variables
-  // 3 lines at most, ~22px per line, safe with minHeight 66px (could be tweaked)
+  // 3 lines at most, ~22px per line, safe with minHeight 66px
   const descriptionMinHeight = "66px";
 
   return (
@@ -77,12 +77,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
       </CardHeader>
       <CardContent className="flex-grow p-4 pt-0 flex flex-col">
-        {/* Project status, INSIDE card, above deployment */}
+        {/* Project status badge */}
         {statusName && statusClass && (
           <span
-            className={`mb-2 text-white text-xs px-3 py-1 rounded-full inline-block max-w-fit font-semibold ${statusClass}`}
+            className={`mb-3 text-white text-xs px-3 py-1 rounded-full inline-block max-w-fit font-semibold ${statusClass}`}
             title={statusDescription}
-            style={{ marginBottom: "8px" }}
           >
             {statusName}
           </span>

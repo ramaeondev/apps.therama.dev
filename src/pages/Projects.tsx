@@ -65,7 +65,7 @@ const Projects: React.FC = () => {
         });
         
         const statusRaw = await statusRes.json();
-        const statusArr: StatusAPI[] = statusRaw.statuses || [];
+        const statusArr: StatusAPI[] = Array.isArray(statusRaw) ? statusRaw : (statusRaw.statuses || []);
         
         // Map status.id -> status
         const statusMap: Record<string, StatusAPI> = {};
