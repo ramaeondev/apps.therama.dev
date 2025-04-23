@@ -54,6 +54,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     ? format(new Date(lastDeployedAt), 'MMM dd, yyyy h:mm a')
     : 'Not deployed yet';
 
+  // Description height variables
+  // 3 lines at most, ~22px per line, safe with minHeight 66px (could be tweaked)
+  const descriptionMinHeight = "66px";
+
   return (
     <Card className="flex flex-col h-full relative overflow-hidden hover:shadow-md transition-all">
       <CardHeader className="p-4 pb-2">
@@ -73,20 +77,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
       </CardHeader>
       <CardContent className="flex-grow p-4 pt-0 flex flex-col">
-        {/* Status badge INSIDE card */}
+        {/* Project status, INSIDE card, above deployment */}
         {statusName && statusClass && (
           <span
-            className={`${statusClass} text-white text-xs px-3 py-1 rounded-full inline-block mb-2 max-w-fit`}
+            className={`mb-2 text-white text-xs px-3 py-1 rounded-full inline-block max-w-fit font-semibold ${statusClass}`}
             title={statusDescription}
+            style={{ marginBottom: "8px" }}
           >
             {statusName}
           </span>
         )}
+        {/* Project description: fixed min/max height for uniform cards */}
         <p
           className="text-gray-600 dark:text-gray-300 mb-3 text-sm"
           style={{
-            minHeight: '48px',
-            maxHeight: '48px',
+            minHeight: descriptionMinHeight,
+            maxHeight: descriptionMinHeight,
             overflow: 'hidden',
             display: '-webkit-box',
             WebkitLineClamp: 3,
@@ -96,6 +102,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         >
           {description}
         </p>
+        {/* Tech badges */}
         <div className="flex flex-wrap gap-1 mb-3">
           {technologies.map(tech => (
             <span
@@ -191,4 +198,3 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 };
 
 export default ProjectCard;
-
