@@ -64,12 +64,21 @@ const Projects: React.FC = () => {
           return orderA - orderB;
         });
         
+        // Handle different response formats for statuses
         const statusRaw = await statusRes.json();
-        const statusArr: StatusAPI[] = Array.isArray(statusRaw) ? statusRaw : (statusRaw.statuses || []);
+        let statusArr: StatusAPI[] = [];
+        
+        if (Array.isArray(statusRaw)) {
+          statusArr = statusRaw;
+        } else if (statusRaw && Array.isArray(statusRaw.statuses)) {
+          statusArr = statusRaw.statuses;
+        }
         
         // Map status.id -> status
         const statusMap: Record<string, StatusAPI> = {};
-        statusArr.forEach((s) => { statusMap[s.id] = s; });
+        statusArr.forEach((s) => { 
+          statusMap[s.id] = s; 
+        });
         
         // Parse social links response
         let socialData: SocialLink[] = [];
@@ -148,6 +157,12 @@ const Projects: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => {
             const statusObj = statuses[project.status_id];
+            console.log("Project status mapping:", {
+              projectId: project.id,
+              projectTitle: project.title,
+              statusId: project.status_id,
+              statusObj: statusObj
+            });
             return (
               <ProjectCard
                 key={project.id}

@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { Github, EyeOff, ExternalLink, Clock, Info, Calendar, FileText } from 'lucide-react';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ReadmeDialog from './ReadmeDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import DeploymentHistoryDialog from './DeploymentHistoryDialog';
+import StatusBadge from './StatusBadge';
 
 interface ProjectCardProps {
   id: string;
@@ -54,21 +55,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     ? format(new Date(lastDeployedAt), 'MMM dd, yyyy h:mm a')
     : 'Not deployed yet';
 
-  // Description height variables
-  // 3 lines at most, ~22px per line, safe with minHeight 66px
-  const descriptionMinHeight = "66px";
-
   return (
     <Card className="flex flex-col h-full relative overflow-hidden hover:shadow-md transition-all">
       <CardHeader className="p-4 pb-2">
-        <div className="aspect-video w-full overflow-hidden rounded-lg mb-3">
+        <div className="aspect-video w-full overflow-hidden rounded-lg mb-2">
           <img
             src={imageUrl}
             alt={title}
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-1">
           <h3 className="text-xl font-bold text-dark-purple dark:text-gray-100">{title}</h3>
           <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
             <Clock className="h-3 w-3" />
@@ -76,33 +73,26 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow p-4 pt-0 flex flex-col">
+      <CardContent className="flex-grow p-4 pt-0 flex flex-col gap-2">
         {/* Project status badge */}
-        {statusName && statusClass && (
-          <span
-            className={`mb-3 text-white text-xs px-3 py-1 rounded-full inline-block max-w-fit font-semibold ${statusClass}`}
-            title={statusDescription}
-          >
-            {statusName}
-          </span>
-        )}
-        {/* Project description: fixed min/max height for uniform cards */}
+        <div className="mb-1">
+          <StatusBadge 
+            statusName={statusName} 
+            statusClass={statusClass}
+            statusDescription={statusDescription}
+          />
+        </div>
+        
+        {/* Project description */}
         <p
-          className="text-gray-600 dark:text-gray-300 mb-3 text-sm"
-          style={{
-            minHeight: descriptionMinHeight,
-            maxHeight: descriptionMinHeight,
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical'
-          }}
+          className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3"
           title={description}
         >
           {description}
         </p>
+        
         {/* Tech badges */}
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="flex flex-wrap gap-1 mt-1">
           {technologies.map(tech => (
             <span
               key={tech}
@@ -112,11 +102,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             </span>
           ))}
         </div>
-        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
+        
+        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
           <Calendar className="h-3 w-3" />
           <span>Last deployed: {formattedDate}</span>
         </div>
-        <div className="flex gap-2 mt-auto">
+        
+        <div className="flex gap-2 mt-2">
           {/* GitHub Button */}
           {isPublic ? (
             <Button
