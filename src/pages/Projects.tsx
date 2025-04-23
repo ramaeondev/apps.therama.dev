@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import ProjectCard from '@/components/ProjectCard';
 import { toast } from "sonner";
-import { Github, Twitter, Linkedin } from 'lucide-react';
+import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube } from 'lucide-react';
 import projectsData from '../assets/projects.json';
 
 interface ProjectAPI {
@@ -75,7 +75,6 @@ const Projects: React.FC = () => {
         let socialData: SocialLink[] = [];
         try {
           const socialRaw = await socialRes.json();
-          // Check if the response has a links property
           if (socialRaw && socialRaw.links && Array.isArray(socialRaw.links)) {
             socialData = socialRaw.links;
           } else if (Array.isArray(socialRaw)) {
@@ -109,9 +108,9 @@ const Projects: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-soft-gray dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-soft-gray dark:bg-gray-900 transition-colors duration-200">
       <Header />
-      <div className="container mx-auto px-4 sm:px-8 py-8">
+      <div className="container mx-auto px-4 sm:px-8 py-8 flex-grow">
         <div className="text-center py-10 bg-soft-purple dark:bg-dark-purple rounded-lg shadow-md mb-8 transition-colors duration-200">
           <h1 className="text-4xl font-bold text-dark-purple dark:text-white mb-4">
               Digital Innovation Lab
@@ -120,20 +119,30 @@ const Projects: React.FC = () => {
           Exploring the intersection of code, creativity, and cutting-edge technology.
           </p>
           <div className="flex items-center justify-center gap-4 mt-6">
-            {Array.isArray(socialLinks) && socialLinks.length > 0 && socialLinks.map((link) => (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-dark-purple dark:text-white hover:text-vivid-purple dark:hover:text-vivid-purple transition-colors"
-                aria-label={link.label}
-              >
-                {link.platform === 'github' && <Github size={24} />}
-                {link.platform === 'twitter' && <Twitter size={24} />}
-                {link.platform === 'linkedin' && <Linkedin size={24} />}
-              </a>
-            ))}
+            {Array.isArray(socialLinks) && socialLinks.length > 0 && socialLinks.map((link) => {
+              let Icon = null;
+              switch (link.platform) {
+                case 'github': Icon = Github; break;
+                case 'twitter': Icon = Twitter; break;
+                case 'linkedin': Icon = Linkedin; break;
+                case 'facebook': Icon = Facebook; break;
+                case 'instagram': Icon = Instagram; break;
+                case 'youtube': Icon = Youtube; break;
+                default: Icon = null;
+              }
+              return (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-dark-purple dark:text-white hover:text-vivid-purple dark:hover:text-vivid-purple transition-colors"
+                  aria-label={link.label}
+                >
+                  {Icon && <Icon size={24} />}
+                </a>
+              );
+            })}
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -164,6 +173,42 @@ const Projects: React.FC = () => {
           })}
         </div>
       </div>
+      {/* Footer */}
+      <footer className="w-full border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-purple py-6 mt-auto">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex gap-3 mb-2 md:mb-0">
+            {Array.isArray(socialLinks) && socialLinks.length > 0 && socialLinks.map((link) => {
+              let Icon = null;
+              switch (link.platform) {
+                case 'github': Icon = Github; break;
+                case 'twitter': Icon = Twitter; break;
+                case 'linkedin': Icon = Linkedin; break;
+                case 'facebook': Icon = Facebook; break;
+                case 'instagram': Icon = Instagram; break;
+                case 'youtube': Icon = Youtube; break;
+                default: Icon = null;
+              }
+              return (
+                <a
+                  key={link.id + '-footer'}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-dark-purple dark:text-gray-300 hover:text-vivid-purple dark:hover:text-vivid-purple transition-colors"
+                  aria-label={link.label}
+                >
+                  {Icon && <Icon size={22} />}
+                </a>
+              );
+            })}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center flex flex-col md:flex-row md:items-center gap-1">
+            <span>&copy; {new Date().getFullYear()} {developerName || 'All rights reserved'}.</span>
+            <span>MIT License.</span>
+            <span>All rights reserved 2025.</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
