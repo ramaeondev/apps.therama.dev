@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { ExternalLink, Calendar, GitBranch, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from "@/lib/utils";
 
 interface RepositoryStats {
   name: string;
@@ -93,17 +94,44 @@ export default function Repos() {
             <Skeleton className="h-10 w-[300px]" />
           </div>
           <div className="rounded-md border">
-            <div className="space-y-3 p-4">
-              {[...Array(5)].map((_, idx) => (
-                <div key={idx} className="flex gap-4">
-                  <Skeleton className="h-6 w-[200px]" />
-                  <Skeleton className="h-6 w-[150px]" />
-                  <Skeleton className="h-6 w-[100px]" />
-                  <Skeleton className="h-6 w-[100px]" />
-                  <Skeleton className="h-6 w-[100px]" />
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {["Repository", "Created At", "Total Workflows", "Successful", "Failed", "Total Time"].map((header) => (
+                    <TableHead key={header}>
+                      <Skeleton className="h-4 w-[100px]" />
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(10)].map((_, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="py-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Skeleton className="h-3.5 w-3.5 rounded-full" />
+                        <Skeleton className="h-3.5 w-[200px]" />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Skeleton className="h-3.5 w-3.5 rounded-full" />
+                        <Skeleton className="h-3.5 w-[100px]" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-1.5"><Skeleton className="h-4 w-[60px]" /></TableCell>
+                    <TableCell className="py-1.5"><Skeleton className="h-4 w-[60px]" /></TableCell>
+                    <TableCell className="py-1.5"><Skeleton className="h-4 w-[60px]" /></TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Skeleton className="h-3.5 w-3.5 rounded-full" />
+                        <Skeleton className="h-3.5 w-[80px]" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
       </>
@@ -152,32 +180,35 @@ export default function Repos() {
               <TableBody>
                 {filteredRepos?.map((repo) => (
                   <TableRow key={repo.name}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <GitBranch className="w-4 h-4" />
+                    <TableCell className={cn(
+                      "py-1.5",
+                      "whitespace-nowrap"
+                    )}>
+                      <div className="flex items-center gap-1.5">
+                        <GitBranch className="w-3.5 h-3.5" />
                         <a 
                           href={repo.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 text-sm"
                         >
                           {repo.name}
                         </a>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {format(new Date(repo.created_at), 'MMM dd, yyyy')}
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span className="text-sm">{format(new Date(repo.created_at), 'MMM dd, yyyy')}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{repo.total_workflows}</TableCell>
-                    <TableCell className="text-green-600">{repo.successful_deployments}</TableCell>
-                    <TableCell className="text-red-600">{repo.failed_deployments}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        {formatTime(repo.total_deployment_time)}
+                    <TableCell className="py-1.5 text-sm">{repo.total_workflows}</TableCell>
+                    <TableCell className="py-1.5 text-sm text-green-600">{repo.successful_deployments}</TableCell>
+                    <TableCell className="py-1.5 text-sm text-red-600">{repo.failed_deployments}</TableCell>
+                    <TableCell className="py-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span className="text-sm">{formatTime(repo.total_deployment_time)}</span>
                       </div>
                     </TableCell>
                   </TableRow>

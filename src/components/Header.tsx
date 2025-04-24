@@ -61,10 +61,10 @@ const Header = () => {
           <Button
             variant="ghost"
             size="icon"
-            className={`text-white hover:bg-white/10 ${location.pathname === '/repositories' ? 'bg-white/20' : ''}`}
+            className={`text-white hover:bg-white/10 ${location.pathname === '/repo-stats' ? 'bg-white/20' : ''}`}
             asChild
           >
-            <Link to="/repositories" aria-label="Repositories">
+            <Link to="/repo-stats" aria-label="repo-stats">
               <GitFork className="h-5 w-5" />
             </Link>
           </Button>
