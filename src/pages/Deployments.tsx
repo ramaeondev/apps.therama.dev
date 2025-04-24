@@ -21,6 +21,7 @@ interface Deployment {
   duration_in_seconds: number;
   is_success: boolean;
   created_at: string;
+  project_name:string;
 }
 
 const Deployments = () => {
@@ -102,6 +103,9 @@ const Deployments = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="cursor-pointer" onClick={() => handleSort('project_name')}>
+                  Project Name {sortColumn === 'project_name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </TableHead>
                 <TableHead className="cursor-pointer" onClick={() => handleSort('version')}>
                   Version {sortColumn === 'version' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </TableHead>
@@ -129,6 +133,7 @@ const Deployments = () => {
             <TableBody>
               {filteredDeployments.map((deployment: Deployment) => (
                 <TableRow key={deployment.id}>
+                  <TableCell>{deployment.project_name}</TableCell>
                   <TableCell>{deployment.version}</TableCell>
                   <TableCell>{deployment.status}</TableCell>
                   <TableCell>{format(new Date(deployment.deployment_time), 'MMM dd, yyyy HH:mm')}</TableCell>
