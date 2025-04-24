@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useS3Url } from '@/hooks/useS3Url';
 
 interface ReadmeDialogProps {
   title: string;
@@ -11,21 +12,33 @@ interface ReadmeDialogProps {
 
 const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onOpenChange }) => {
   const [readme, setReadme] = useState<string>('Loading README...');
+  const s3Url = useS3Url(readmeUrl);
 
   useEffect(() => {
-    if (open) {
+    if (open && s3Url) {
       fetchReadme();
+    } else if (open && !s3Url) {
+      // Reset state when dialog opens but URL is not yet available
+      setReadme('Loading README...');
     }
-  }, [open, readmeUrl]);
+  }, [open, s3Url]);
 
   const fetchReadme = async () => {
-    try {
-      const response = await fetch(readmeUrl);
-      const text = await response.text();
-      setReadme(text);
-    } catch (error) {
+    if (!s3Url) {
       setReadme('Failed to load README. Please try again later.');
+      return;
+    }
+
+    try {
+      const response = await fetch(s3Url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const text = await response.text();
+      setReadme(text || 'No README content available.');
+    } catch (error) {
       console.error('Error fetching README:', error);
+      setReadme('Failed to load README. Please try again later.');
     }
   };
 

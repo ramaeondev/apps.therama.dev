@@ -1,11 +1,18 @@
 
 import { useEffect, useState } from 'react';
 
-export function useS3Url(filename: string): string | null {
+export function useS3Url(filename: string | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!filename) return;
+
+    // Check if it's already a full URL
+    if (filename.startsWith('http')) {
+      setUrl(filename);
+      return;
+    }
+
     // Reset before fetch
     setUrl(null);
     fetch("https://api.therama.dev/functions/v1/get-s3-file", {
