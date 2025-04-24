@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 
-export function useS3Url(filename: string): string | null {
+export function useS3Url(filename: string | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
