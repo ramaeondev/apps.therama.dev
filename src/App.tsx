@@ -8,6 +8,7 @@ import Projects from "./pages/Projects";
 import Deployments from "./pages/Deployments";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
+import ProjectGrid from "./pages/ProjectGrid";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,7 @@ const App = () => (
           <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
             <Routes>
               <Route path="/" element={<Projects />} />
-              <Route path="/projects" element={<Projects />} />
+              <Route path="/projects" element={<ProjectGrid />} />
               <Route path="/deployments" element={<Deployments />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

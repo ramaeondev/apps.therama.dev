@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube } from 'lucide-react';
 import projectsData from '../assets/projects.json';
 
-interface ProjectAPI {
+export interface ProjectAPI {
   id: string;
   title: string;
   description: string;
@@ -21,6 +21,7 @@ interface ProjectAPI {
   readme_url: string;
   order: number;
   last_deployed_at?: string;
+  status: string;
 }
 
 interface StatusAPI {
