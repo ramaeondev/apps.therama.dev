@@ -8,7 +8,6 @@ import Projects from "./pages/Projects";
 import Deployments from "./pages/Deployments";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
-import NavigationBar from "./components/NavigationBar";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +19,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-            <NavigationBar />
             <Routes>
               <Route path="/" element={<Projects />} />
               <Route path="/projects" element={<Projects />} />
