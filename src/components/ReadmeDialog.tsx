@@ -17,6 +17,9 @@ const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onO
   useEffect(() => {
     if (open && s3Url) {
       fetchReadme();
+    } else if (open && !s3Url) {
+      // Reset state when dialog opens but URL is not yet available
+      setReadme('Loading README...');
     }
   }, [open, s3Url]);
 
@@ -28,11 +31,14 @@ const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onO
 
     try {
       const response = await fetch(s3Url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
       const text = await response.text();
-      setReadme(text);
+      setReadme(text || 'No README content available.');
     } catch (error) {
-      setReadme('Failed to load README. Please try again later.');
       console.error('Error fetching README:', error);
+      setReadme('Failed to load README. Please try again later.');
     }
   };
 
