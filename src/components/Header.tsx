@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 
 const Header = () => {
   const { theme, setTheme } = useTheme();
-  const developerName = projectsData.profile?.name || 'Rama Reddy';
 
   return (
     <header className="bg-dark-purple text-white py-4 px-6">

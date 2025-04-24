@@ -20,6 +20,20 @@
     "tailwindcss",
     "shadcn/ui"
   ],
+  "technologies": [
+    "Vite",
+    "React",
+    "TypeScript",
+    "Tailwind CSS",
+    "shadcn/ui"
+  ],
+  "features": [
+    "Responsive Design",
+    "Dark Mode",
+    "Light Mode",
+    "Customizable Themes",
+    "Accessibility"
+  ],
   "update_project_version": "https://api.therama.dev/functions/v1/update-project-version",
   "log_deployment": "https://api.therama.dev/functions/v1/log-deployment",
   "scripts": {
