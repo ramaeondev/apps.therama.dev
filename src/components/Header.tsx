@@ -1,7 +1,7 @@
 
 import React from 'react';
 import projectsData from '../assets/projects.json';
-import { MoonIcon, SunIcon, Grid2X2, History } from 'lucide-react';
+import { MoonIcon, SunIcon, Grid2X2, History, Home } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
@@ -26,6 +26,16 @@ const Header = () => {
         </a>
         
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`text-white hover:bg-white/10 ${location.pathname === '/' ? 'bg-white/20' : ''}`}
+            asChild
+          >
+            <Link to="/" aria-label="Home">
+              <Home className="h-5 w-5" />
+            </Link>
+          </Button>
           <Button
             variant="ghost"
             size="icon"
