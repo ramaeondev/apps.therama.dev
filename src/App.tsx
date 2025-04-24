@@ -9,6 +9,8 @@ import Deployments from "./pages/Deployments";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./hooks/use-theme";
 import ProjectGrid from "./pages/ProjectGrid";
+import RawLogs from "./pages/RawLogs";
+import Repos from "./pages/Repos";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,8 @@ const App = () => (
               <Route path="/" element={<Projects />} />
               <Route path="/projects" element={<ProjectGrid />} />
               <Route path="/deployments" element={<Deployments />} />
+              <Route path="/raw-logs" element={<RawLogs />} />
+              <Route path="/repo-stats" element={<Repos />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

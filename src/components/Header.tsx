@@ -1,7 +1,7 @@
 
 import React from 'react';
 import projectsData from '../assets/projects.json';
-import { MoonIcon, SunIcon, Grid2X2, History, Home } from 'lucide-react';
+import { MoonIcon, SunIcon, Grid2X2, History, Home, ActivitySquare, GitFork } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
@@ -55,6 +55,28 @@ const Header = () => {
           >
             <Link to="/deployments" aria-label="Deployment History">
               <History className="h-5 w-5" />
+            </Link>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`text-white hover:bg-white/10 ${location.pathname === '/repositories' ? 'bg-white/20' : ''}`}
+            asChild
+          >
+            <Link to="/repositories" aria-label="Repositories">
+              <GitFork className="h-5 w-5" />
+            </Link>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`text-white hover:bg-white/10 ${location.pathname === '/raw-logs' ? 'bg-white/20' : ''}`}
+            asChild
+          >
+            <Link to="/raw-logs" aria-label="Raw Logs">
+              <ActivitySquare className="h-5 w-5" />
             </Link>
           </Button>
           
