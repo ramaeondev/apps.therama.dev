@@ -21,7 +21,9 @@ export interface ProjectAPI {
   readme_url: string;
   order: number;
   last_deployed_at?: string;
-  status: string;
+  status_name: string;
+  status_class: string;
+  status_description: string;
 }
 
 interface StatusAPI {

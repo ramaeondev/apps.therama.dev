@@ -92,8 +92,8 @@ const Projects = () => {
                 <TableHead className="cursor-pointer" onClick={() => handleSort('current_version')}>
                   Current Version {sortColumn === 'current_version' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>
-                  Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                <TableHead className="cursor-pointer" onClick={() => handleSort('status_name')}>
+                  Status {sortColumn === 'status_name' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </TableHead>
                 <TableHead className="cursor-pointer" onClick={() => handleSort('last_deployed_at')}>
                   Last Deployment Time {sortColumn === 'last_deployed_at' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -118,7 +118,7 @@ const Projects = () => {
                 <TableRow key={deployment.id}>
                   <TableCell>{deployment.title}</TableCell>
                   <TableCell>{deployment.current_version}</TableCell>
-                  <TableCell>{deployment.status}</TableCell>
+                  <TableCell>{deployment.status_name}</TableCell>
                   <TableCell>{format(new Date(deployment.last_deployed_at), 'MMM dd, yyyy HH:mm')}</TableCell>
                   <TableCell>{deployment.is_public}</TableCell>
                   <TableCell>{deployment.preview_url}</TableCell>
