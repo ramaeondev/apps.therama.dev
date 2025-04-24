@@ -1,18 +1,20 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useS3Url } from '@/hooks/useS3Url';
 
 interface ReadmeDialogProps {
   title: string;
-  readmeUrl: string;
+  readmeUrl: string; // This will be like "meta/README.md"
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onOpenChange }) => {
   const [readme, setReadme] = useState<string>('Loading README...');
-  const s3Url = useS3Url(readmeUrl);
+  
+  // Extract just the path part if a full URL is provided
+  const cleanReadmeUrl = readmeUrl.replace(/^https?:\/\/[^\/]+\//, '');
+  const s3Url = useS3Url(cleanReadmeUrl);
 
   useEffect(() => {
     if (open && s3Url) {
