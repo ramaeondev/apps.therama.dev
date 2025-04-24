@@ -1,7 +1,7 @@
 {
   "name": "apps.therama.dev",
   "private": true,
-  "version": "1.12.3",
+  "version": "1.2.0",
   "type": "module",
   "project_id": "b03ee572-45f4-4e0a-ab29-0ac7417cf0b8",
   "status": "Under Development",
