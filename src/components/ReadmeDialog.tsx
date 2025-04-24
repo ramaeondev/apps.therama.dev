@@ -18,7 +18,6 @@ const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onO
     if (open && s3Url) {
       fetchReadme();
     } else if (open && !s3Url) {
-      // Reset state when dialog opens but URL is not yet available
       setReadme('Loading README...');
     }
   }, [open, s3Url]);
@@ -60,4 +59,3 @@ const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onO
 };
 
 export default ReadmeDialog;
-
