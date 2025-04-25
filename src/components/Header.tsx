@@ -58,7 +58,7 @@ const Header = () => {
             </Link>
           </Button>
 
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             className={`text-white hover:bg-white/10 ${location.pathname === '/repo-stats' ? 'bg-white/20' : ''}`}
@@ -78,7 +78,7 @@ const Header = () => {
             <Link to="/raw-logs" aria-label="Raw Logs">
               <ActivitySquare className="h-5 w-5" />
             </Link>
-          </Button>
+          </Button> */}
           
           <Button
             variant="ghost"

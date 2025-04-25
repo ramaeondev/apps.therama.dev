@@ -8,7 +8,7 @@ import { ExternalLink, Calendar, GitBranch, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from "@/lib/utils";
 
-interface RepositoryStats {
+export interface RepositoryStats {
   name: string;
   url: string;
   created_at: string;
@@ -18,7 +18,7 @@ interface RepositoryStats {
   total_deployment_time: number;
 }
 
-interface ApiResponse {
+export interface ApiResponse {
   repositories: RepositoryStats[];
 }
 
