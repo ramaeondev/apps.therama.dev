@@ -7,7 +7,7 @@ export function useS3Url(filename: string): string | null {
     if (!filename) return;
 
     // Clean the filename to ensure we only send the path part
-    const cleanFilename = filename.replace(/^https?:\/\/[^\/]+\//, '');
+    const cleanFilename = filename.replace(/^https?:\/\/[^/]+\//, '');
 
     fetch("https://api.therama.dev/functions/v1/get-s3-file", {
       method: "POST",

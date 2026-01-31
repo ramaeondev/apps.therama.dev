@@ -11,9 +11,9 @@ interface ReadmeDialogProps {
 
 const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onOpenChange }) => {
   const [readme, setReadme] = useState<string>('Loading README...');
-  
+
   // Extract just the path part if a full URL is provided
-  const cleanReadmeUrl = readmeUrl.replace(/^https?:\/\/[^\/]+\//, '');
+  const cleanReadmeUrl = readmeUrl.replace(/^https?:\/\/[^/]+\//, '');
   const s3Url = useS3Url(cleanReadmeUrl);
 
   useEffect(() => {

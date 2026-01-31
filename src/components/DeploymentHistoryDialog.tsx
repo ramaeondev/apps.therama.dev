@@ -45,6 +45,7 @@ const DeploymentHistoryDialog: React.FC<DeploymentHistoryDialogProps> = ({
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     // Fetch deployments and project statuses in parallel
     Promise.all([
@@ -81,14 +82,14 @@ const DeploymentHistoryDialog: React.FC<DeploymentHistoryDialogProps> = ({
             deployments.map((deployment) => {
               // Find project status by name
               const projectStatusObj = findStatusByName(deployment.status, statuses);
-              
+
               // Base colors for light/dark mode
               const successLight = 'border-green-200 bg-green-50 text-gray-900';
               const successDark = 'border-green-800 bg-green-900/30 text-white';
               const failureLight = 'border-red-200 bg-red-50 text-gray-900';
               const failureDark = 'border-red-800 bg-red-900/30 text-white';
-              
-              const cardClasses = deployment.is_success 
+
+              const cardClasses = deployment.is_success
                 ? `border rounded-md mb-2 p-4 ${successLight} dark:${successDark}`
                 : `border rounded-md mb-2 p-4 ${failureLight} dark:${failureDark}`;
 
@@ -104,12 +105,12 @@ const DeploymentHistoryDialog: React.FC<DeploymentHistoryDialogProps> = ({
                     <p><span className="font-medium">Git Ref:</span> {deployment.github_ref}</p>
                     <p><span className="font-medium">Commit SHA:</span> {deployment.github_sha}</p>
                     <p><span className="font-medium">Commit:</span> {deployment.commit_message}</p>
-                    
+
                     {/* Project status - from the status field in deployment */}
                     <div className="flex items-center gap-2 mt-2">
                       <span className="font-medium">Project Status:</span>
                       {projectStatusObj ? (
-                        <span 
+                        <span
                           className={`px-2 py-0.5 rounded-full font-semibold text-xs ${projectStatusObj.class.split(' ')[0]} text-white`}
                           title={projectStatusObj.description}
                         >
@@ -121,25 +122,24 @@ const DeploymentHistoryDialog: React.FC<DeploymentHistoryDialogProps> = ({
                         </span>
                       )}
                     </div>
-                    
+
                     {/* Deployment status - from is_success field */}
                     <div className="flex items-center gap-2 mt-1">
                       <span className="font-medium">Deployment Status:</span>
-                      <span className={`px-2 py-0.5 rounded-full font-semibold text-xs ${
-                        deployment.is_success 
-                          ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300' 
+                      <span className={`px-2 py-0.5 rounded-full font-semibold text-xs ${deployment.is_success
+                          ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
                           : 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
-                      }`}>
+                        }`}>
                         {deployment.is_success ? 'Success' : 'Failed'}
                       </span>
                     </div>
-                    
+
                     <p className="mt-2">
                       <span className="font-medium">Deployed URL:</span>{' '}
-                      <a 
-                        href={deployment.deployment_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={deployment.deployment_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="underline text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                       >
                         {deployment.deployment_url}

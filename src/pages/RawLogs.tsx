@@ -7,12 +7,12 @@ import { Input } from '@/components/ui/input';
 import { LogsResponse, WorkflowLog } from '@/types/logs';
 import { ExternalLink, Clock, GitBranch, User, CheckCircle, XCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 
@@ -51,7 +51,7 @@ const RawLogs = () => {
 
   // Flatten and sort all workflow logs
   const allLogs = data?.repositories.flatMap(repo => repo.workflow_logs) || [];
-  
+
   const filteredLogs = allLogs
     .filter(log => {
       const searchFields = [
@@ -62,25 +62,25 @@ const RawLogs = () => {
         log.branch,
         log.commit.message
       ].map(field => field?.toLowerCase() || '');
-      
+
       return searchFields.some(field => field.includes(searchTerm.toLowerCase()));
     })
     .sort((a, b) => {
       const aValue = a[sortColumn];
       const bValue = b[sortColumn];
-      
+
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection === 'asc' 
+        return sortDirection === 'asc'
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
-      
+
       if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortDirection === 'asc' 
-          ? aValue - bValue 
+        return sortDirection === 'asc'
+          ? aValue - bValue
           : bValue - aValue;
       }
-      
+
       return 0;
     });
 
@@ -91,10 +91,13 @@ const RawLogs = () => {
     currentPage * pageSize
   );
 
-  // Reset to first page when search term changes
-  useEffect(() => {
+  const [prevSearchTerm, setPrevSearchTerm] = useState(searchTerm);
+  if (prevSearchTerm !== searchTerm) {
+    setPrevSearchTerm(searchTerm);
     setCurrentPage(1);
-  }, [searchTerm]);
+  }
+
+  // Removed useEffect for page reset
 
   if (isLoading) {
     return (
@@ -182,7 +185,7 @@ const RawLogs = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Scrollable grid */}
         <div className="flex-1 rounded-md border overflow-hidden">
           <div className="overflow-auto h-full">
@@ -224,9 +227,8 @@ const RawLogs = () => {
                         ) : (
                           <XCircle className="w-4 h-4 text-red-500" />
                         )}
-                        <span className={`capitalize ${
-                          log.conclusion === 'success' ? 'text-green-600' : 'text-red-600'
-                        }`}>
+                        <span className={`capitalize ${log.conclusion === 'success' ? 'text-green-600' : 'text-red-600'
+                          }`}>
                           {log.conclusion}
                         </span>
                       </div>
