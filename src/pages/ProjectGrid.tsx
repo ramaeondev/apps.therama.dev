@@ -8,6 +8,7 @@ import { ProjectAPI } from './Projects';
 import { ExternalLink, Github } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProjectStatus } from '@/types/status';
+import { getProjects } from '@/services/appwrite';
 
 const Projects = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,8 +18,7 @@ const Projects = () => {
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const response = await fetch('https://api.therama.dev/functions/v1/get-projects');
-      return response.json();
+      return getProjects();
     },
   });
 

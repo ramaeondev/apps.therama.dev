@@ -5,27 +5,10 @@ import ProjectCard from '@/components/ProjectCard';
 import { toast } from "sonner";
 import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube, Package } from 'lucide-react';
 import projectsData from '../assets/projects.json';
-import { getSocialLinks, getProjectStatuses, type SocialLink, type ProjectStatus } from '@/services/appwrite';
+import { getSocialLinks, getProjectStatuses, getProjects, type SocialLink, type ProjectStatus, type Project } from '@/services/appwrite';
 
-export interface ProjectAPI {
-  id: string;
-  title: string;
-  description: string;
-  technologies: string[];
-  github_url: string;
-  preview_url: string;
-  image_web: string;
-  image_mobile: string;
-  status_id: string;
-  current_version: string;
-  is_public: boolean;
-  readme_url: string;
-  order: number;
-  last_deployed_at?: string;
-  status_name: string;
-  status_class: string;
-  status_description: string;
-}
+// Using Project from appwrite service
+export type ProjectAPI = Project;
 
 // Using ProjectStatus from appwrite service
 type StatusAPI = ProjectStatus;
@@ -41,13 +24,11 @@ const Projects: React.FC = () => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [projRes, statusData, socialData] = await Promise.all([
-          fetch('https://api.therama.dev/functions/v1/get-projects'),
+        const [projData, statusData, socialData] = await Promise.all([
+          getProjects(),
           getProjectStatuses(),
           getSocialLinks(),
         ]);
-        
-        const projData: ProjectAPI[] = await projRes.json();
         
         // Sort projects by order property, handling undefined orders
         const sortedProjects = [...projData].sort((a, b) => {

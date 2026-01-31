@@ -54,6 +54,55 @@ export interface ProjectStatus {
   class: string;
 }
 
+// Appwrite project document format
+interface AppwriteProjectDocument {
+  $id: string;
+  $sequence: number;
+  $createdAt: string;
+  $updatedAt: string;
+  $permissions: string[];
+  $databaseId: string;
+  $collectionId: string;
+  title: string;
+  description: string;
+  technologies: string[];
+  github_url: string;
+  preview_url: string;
+  image_web: string;
+  image_mobile: string;
+  status_id: string;
+  current_version: string;
+  is_public: boolean;
+  readme_url: string;
+  order: number;
+  last_deployed_at?: string;
+  status_name?: string;
+  status_class?: string;
+  status_description?: string;
+  [key: string]: unknown; // For any additional fields
+}
+
+// Transformed format matching Projects.tsx interface
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  technologies: string[];
+  github_url: string;
+  preview_url: string;
+  image_web: string;
+  image_mobile: string;
+  status_id: string;
+  current_version: string;
+  is_public: boolean;
+  readme_url: string;
+  order: number;
+  last_deployed_at?: string;
+  status_name?: string;
+  status_class?: string;
+  status_description?: string;
+}
+
 interface AppwriteResponse<T> {
   documents: T[];
   total: number;
@@ -135,8 +184,78 @@ export async function getProjectStatuses(): Promise<ProjectStatus[]> {
   }
 }
 
+/**
+ * Fetches projects from Appwrite database
+ * @returns Promise<Project[]> Array of projects
+ */
+export async function getProjects(): Promise<Project[]> {
+  try {
+    const url = `${appwriteConfig.endpoint}/databases/${appwriteConfig.databaseId}/collections/projects/documents`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-Appwrite-Project': appwriteConfig.projectId,
+        'X-Appwrite-Key': appwriteConfig.apiKey,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Appwrite API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: AppwriteResponse<AppwriteProjectDocument> = await response.json();
+    
+    // Helper function to normalize technologies to an array
+    const normalizeTechnologies = (tech: unknown): string[] => {
+      if (Array.isArray(tech)) {
+        return tech;
+      }
+      if (typeof tech === 'string') {
+        try {
+          // Try parsing as JSON first
+          const parsed = JSON.parse(tech);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch {
+          // If not JSON, try splitting by comma
+          return tech.split(',').map(t => t.trim()).filter(t => t.length > 0);
+        }
+      }
+      return [];
+    };
+    
+    // Transform Appwrite documents to match the expected format
+    return data.documents.map((doc) => ({
+      id: doc.$id,
+      title: doc.title,
+      description: doc.description,
+      technologies: normalizeTechnologies(doc.technologies),
+      github_url: doc.github_url,
+      preview_url: doc.preview_url,
+      image_web: doc.image_web,
+      image_mobile: doc.image_mobile,
+      status_id: doc.status_id,
+      current_version: doc.current_version,
+      is_public: doc.is_public,
+      readme_url: doc.readme_url,
+      order: doc.order,
+      last_deployed_at: doc.last_deployed_at,
+      status_name: doc.status_name,
+      status_class: doc.status_class,
+      status_description: doc.status_description,
+    }));
+  } catch (error) {
+    console.error('Error fetching projects from Appwrite:', error);
+    throw error;
+  }
+}
+
 export default {
   getSocialLinks,
   getProjectStatuses,
+  getProjects,
   config: appwriteConfig,
 };

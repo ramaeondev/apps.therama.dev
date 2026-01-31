@@ -98,14 +98,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
         {/* Tech badges */}
         <div className="flex flex-wrap gap-1 mt-1 mb-2">
-          {technologies.map(tech => (
-            <span
-              key={tech}
-              className="bg-soft-purple text-vivid-purple dark:bg-gray-700 dark:text-gray-200 px-2 py-0.5 rounded-full text-xs"
-            >
-              {tech}
-            </span>
-          ))}
+          {Array.isArray(technologies) && technologies.length > 0 ? (
+            technologies.map(tech => (
+              <span
+                key={tech}
+                className="bg-soft-purple text-vivid-purple dark:bg-gray-700 dark:text-gray-200 px-2 py-0.5 rounded-full text-xs"
+              >
+                {tech}
+              </span>
+            ))
+          ) : (
+            <span className="text-xs text-gray-400 dark:text-gray-500">No technologies listed</span>
+          )}
         </div>
 
         {/* Deployed date info */}
