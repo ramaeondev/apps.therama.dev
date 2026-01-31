@@ -31,6 +31,29 @@ export interface SocialLink {
   created_at: string;
 }
 
+// Appwrite project status document format
+interface AppwriteProjectStatusDocument {
+  $id: string;
+  $sequence: number;
+  $createdAt: string;
+  $updatedAt: string;
+  $permissions: string[];
+  $databaseId: string;
+  $collectionId: string;
+  name: string;
+  description: string;
+  class: string;
+  [key: string]: unknown; // For any additional fields
+}
+
+// Transformed format matching Projects.tsx interface
+export interface ProjectStatus {
+  id: string;
+  name: string;
+  description: string;
+  class: string;
+}
+
 interface AppwriteResponse<T> {
   documents: T[];
   total: number;
@@ -76,7 +99,44 @@ export async function getSocialLinks(): Promise<SocialLink[]> {
   }
 }
 
+/**
+ * Fetches project statuses from Appwrite database
+ * @returns Promise<ProjectStatus[]> Array of project statuses
+ */
+export async function getProjectStatuses(): Promise<ProjectStatus[]> {
+  try {
+    const url = `${appwriteConfig.endpoint}/databases/${appwriteConfig.databaseId}/collections/project_statuses/documents`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-Appwrite-Project': appwriteConfig.projectId,
+        'X-Appwrite-Key': appwriteConfig.apiKey,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Appwrite API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: AppwriteResponse<AppwriteProjectStatusDocument> = await response.json();
+    
+    // Transform Appwrite documents to match the expected format
+    return data.documents.map((doc) => ({
+      id: doc.$id,
+      name: doc.name,
+      description: doc.description,
+      class: doc.class,
+    }));
+  } catch (error) {
+    console.error('Error fetching project statuses from Appwrite:', error);
+    throw error;
+  }
+}
+
 export default {
   getSocialLinks,
+  getProjectStatuses,
   config: appwriteConfig,
 };

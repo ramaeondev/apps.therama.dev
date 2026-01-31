@@ -5,7 +5,7 @@ import ProjectCard from '@/components/ProjectCard';
 import { toast } from "sonner";
 import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube, Package } from 'lucide-react';
 import projectsData from '../assets/projects.json';
-import { getSocialLinks, type SocialLink } from '@/services/appwrite';
+import { getSocialLinks, getProjectStatuses, type SocialLink, type ProjectStatus } from '@/services/appwrite';
 
 export interface ProjectAPI {
   id: string;
@@ -27,12 +27,8 @@ export interface ProjectAPI {
   status_description: string;
 }
 
-interface StatusAPI {
-  id: string;
-  name: string;
-  description: string;
-  class: string;
-}
+// Using ProjectStatus from appwrite service
+type StatusAPI = ProjectStatus;
 
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<ProjectAPI[]>([]);
@@ -45,9 +41,9 @@ const Projects: React.FC = () => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [projRes, statusRes, socialData] = await Promise.all([
+        const [projRes, statusData, socialData] = await Promise.all([
           fetch('https://api.therama.dev/functions/v1/get-projects'),
-          fetch('https://api.therama.dev/functions/v1/get-project-statuses'),
+          getProjectStatuses(),
           getSocialLinks(),
         ]);
         
@@ -60,19 +56,9 @@ const Projects: React.FC = () => {
           return orderA - orderB;
         });
         
-        // Handle different response formats for statuses
-        const statusRaw = await statusRes.json();
-        let statusArr: StatusAPI[] = [];
-        
-        if (Array.isArray(statusRaw)) {
-          statusArr = statusRaw;
-        } else if (statusRaw && Array.isArray(statusRaw.statuses)) {
-          statusArr = statusRaw.statuses;
-        }
-        
         // Map status.id -> status
         const statusMap: Record<string, StatusAPI> = {};
-        statusArr.forEach((s) => { 
+        statusData.forEach((s) => { 
           statusMap[s.id] = s; 
         });
 
