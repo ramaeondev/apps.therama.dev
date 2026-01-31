@@ -3,8 +3,9 @@ import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import ProjectCard from '@/components/ProjectCard';
 import { toast } from "sonner";
-import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube } from 'lucide-react';
+import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube, Package } from 'lucide-react';
 import projectsData from '../assets/projects.json';
+import { getSocialLinks, type SocialLink } from '@/services/appwrite';
 
 export interface ProjectAPI {
   id: string;
@@ -33,14 +34,6 @@ interface StatusAPI {
   class: string;
 }
 
-interface SocialLink {
-  id: string;
-  platform: string;
-  url: string;
-  label: string;
-  created_at: string;
-}
-
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<ProjectAPI[]>([]);
   const [statuses, setStatuses] = useState<Record<string, StatusAPI>>({});
@@ -52,10 +45,10 @@ const Projects: React.FC = () => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [projRes, statusRes, socialRes] = await Promise.all([
+        const [projRes, statusRes, socialData] = await Promise.all([
           fetch('https://api.therama.dev/functions/v1/get-projects'),
           fetch('https://api.therama.dev/functions/v1/get-project-statuses'),
-          fetch('https://api.therama.dev/functions/v1/get-social-links'),
+          getSocialLinks(),
         ]);
         
         const projData: ProjectAPI[] = await projRes.json();
@@ -82,20 +75,6 @@ const Projects: React.FC = () => {
         statusArr.forEach((s) => { 
           statusMap[s.id] = s; 
         });
-        
-        // Parse social links response
-        let socialData: SocialLink[] = [];
-        try {
-          const socialRaw = await socialRes.json();
-          if (socialRaw && socialRaw.links && Array.isArray(socialRaw.links)) {
-            socialData = socialRaw.links;
-          } else if (Array.isArray(socialRaw)) {
-            socialData = socialRaw;
-          }
-        } catch (error) {
-          console.error('Error parsing social links:', error);
-          socialData = [];
-        }
 
         setProjects(sortedProjects);
         setStatuses(statusMap);
@@ -140,6 +119,7 @@ const Projects: React.FC = () => {
                 case 'facebook': Icon = Facebook; break;
                 case 'instagram': Icon = Instagram; break;
                 case 'youtube': Icon = Youtube; break;
+                case 'npm': Icon = Package; break;
                 default: Icon = null;
               }
               return (
@@ -203,6 +183,7 @@ const Projects: React.FC = () => {
                 case 'facebook': Icon = Facebook; break;
                 case 'instagram': Icon = Instagram; break;
                 case 'youtube': Icon = Youtube; break;
+                case 'npm': Icon = Package; break;
                 default: Icon = null;
               }
               return (
