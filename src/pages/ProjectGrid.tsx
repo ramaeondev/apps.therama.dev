@@ -8,7 +8,7 @@ import { ProjectAPI } from './Projects';
 import { ExternalLink, Github } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProjectStatus } from '@/types/status';
-import { getProjects } from '@/services/appwrite';
+import { getProjects } from '@/services/staticApi';
 
 const Projects = () => {
   const [searchTerm, setSearchTerm] = useState('');

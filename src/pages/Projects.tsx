@@ -5,12 +5,12 @@ import ProjectCard from '@/components/ProjectCard';
 import { toast } from "sonner";
 import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube, Package } from 'lucide-react';
 import projectsData from '../assets/projects.json';
-import { getSocialLinks, getProjectStatuses, getProjects, type SocialLink, type ProjectStatus, type Project } from '@/services/appwrite';
+import { getSocialLinks, getProjectStatuses, getProjects, type SocialLink, type ProjectStatus, type Project } from '@/services/staticApi';
 
-// Using Project from appwrite service
+// Using Project from the static API service (Supabase)
 export type ProjectAPI = Project;
 
-// Using ProjectStatus from appwrite service
+// Using ProjectStatus from the static API service (Supabase)
 type StatusAPI = ProjectStatus;
 
 const Projects: React.FC = () => {
