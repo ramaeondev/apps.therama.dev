@@ -166,3 +166,13 @@ export default {
   getProjectStatuses,
   getProjects,
 };
+
+// ---------------------------------------------------------------------------
+// Public files (project screenshots, READMEs) in the Storage bucket "uploads".
+// Paths are stored relative, e.g. "images/apps-therama-dev-large.png" or "readme/apps.therama.dev.md".
+
+export function assetUrl(path: string): string | null {
+  if (!path) return null;
+  const clean = path.replace(/^https?:\/\/[^/]+\//, '').replace(/^\/+/, '');
+  return `${SUPABASE_URL.replace(/\/$/, '')}/storage/v1/object/public/uploads/${clean}`;
+}

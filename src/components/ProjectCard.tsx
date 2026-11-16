@@ -9,7 +9,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import DeploymentHistoryDialog from './DeploymentHistoryDialog';
 import StatusBadge from './StatusBadge';
-import { useS3Url } from '@/hooks/useS3Url';
+import { useAssetUrl } from '@/hooks/useAssetUrl';
 
 interface ProjectCardProps {
   id: string;
@@ -48,8 +48,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   lastDeployedAt,
 }) => {
   const isMobile = useIsMobile();
-  // Fetch the right S3 URL for image (web or mobile)
-  const resolvedImageUrl = useS3Url(isMobile ? images.mobile : images.web);
+  // Public URL for the image (web or mobile) in the Supabase "uploads" bucket
+  const resolvedImageUrl = useAssetUrl(isMobile ? images.mobile : images.web);
 
   const [showDeployDialog, setShowDeployDialog] = useState(false);
   const [showReadmeDialog, setShowReadmeDialog] = useState(false);
@@ -62,7 +62,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     <Card className="flex flex-col h-full relative overflow-hidden hover:shadow-md transition-all">
       <CardHeader className="p-4 pb-0">
         <div className="aspect-video w-full overflow-hidden rounded-lg mb-1">
-          {/* Use a fallback if S3 URL is not loaded */}
+          {/* Grey background shows while the image loads */}
           <img
             src={resolvedImageUrl || ""}
             alt={title}
