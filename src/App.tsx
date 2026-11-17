@@ -23,7 +23,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+          <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-[#0b0b16] dark:text-slate-100">
             <Routes>
               <Route path="/" element={<Projects />} />
               <Route path="/projects" element={<ProjectsAgGrid />} />

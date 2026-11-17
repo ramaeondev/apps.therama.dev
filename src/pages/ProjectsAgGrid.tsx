@@ -10,6 +10,8 @@ import { useQuery } from '@tanstack/react-query';
 import '../styles/globals.css';
 import { ApiResponse } from './Repos';
 import { useTheme } from '@/hooks/use-theme';
+import PageHeader from '@/components/PageHeader';
+import MetricCard from '@/components/MetricCard';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 
@@ -102,24 +104,39 @@ const ProjectsAgGrid: React.FC = () => {
     minWidth: 100,
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading data</div>;
+  const repositories = data?.repositories ?? [];
+  const totalWorkflows = repositories.reduce((sum, repository) => sum + repository.total_workflows, 0);
+  const successfulDeployments = repositories.reduce((sum, repository) => sum + repository.successful_deployments, 0);
+  const failedDeployments = repositories.reduce((sum, repository) => sum + repository.failed_deployments, 0);
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0b16]">
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 py-8 px-2 md:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-4">Repository Statistics</h1>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4 md:p-8 mb-8 border border-gray-200 dark:border-gray-800">
+      <main className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 sm:py-14 lg:px-12">
+        <PageHeader
+          eyebrow="Operations / repositories"
+          title="Repository pulse"
+          description="A live view of workflow throughput and deployment performance across the projects behind the portfolio."
+        />
+        {isLoading ? (
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-8 text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">Loading repository metrics…</div>
+        ) : error ? (
+          <div role="alert" className="mt-8 rounded-2xl border border-rose-200 bg-rose-50 p-8 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200">Unable to load repository metrics right now.</div>
+        ) : (
+          <>
+            <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Repository summary">
+              <MetricCard label="Repositories" value={repositories.length} detail="Tracked in the workspace" />
+              <MetricCard label="Workflows" value={totalWorkflows} detail="Total workflow runs" tone="amber" />
+              <MetricCard label="Successful" value={successfulDeployments} detail="Completed deployments" tone="emerald" />
+              <MetricCard label="Failed" value={failedDeployments} detail="Runs needing attention" tone="rose" />
+            </section>
+            <section className="mt-8 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 sm:p-5" aria-label="Repository statistics table">
           <div
             className={isDark ? 'ag-theme-alpine-dark' : 'ag-theme-alpine'}
-            style={{ height: '350px', width: '100%', borderRadius: 12, overflow: 'hidden' }}
+            style={{ height: '420px', width: '100%', borderRadius: 12, overflow: 'hidden' }}
           >
             <AgGridReact
-              rowData={data?.repositories}
+              rowData={repositories}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               animateRows={true}
@@ -127,16 +144,16 @@ const ProjectsAgGrid: React.FC = () => {
               paginationPageSize={20}
             />
           </div>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4 md:p-8 border border-gray-200 dark:border-gray-800">
-        <h2 className="text-xl font-semibold mb-4 text-dark-purple">Repository Metrics</h2>
-        <div className="flex flex-col md:flex-row gap-8 w-full">
+            </section>
+            <section className="mt-8 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 sm:p-8" aria-labelledby="repository-metrics-heading">
+        <h2 id="repository-metrics-heading" className="text-2xl font-semibold tracking-[-0.03em] text-slate-950 dark:text-white">Repository metrics</h2>
+        <div className="mt-6 flex w-full flex-col gap-8 md:flex-row">
           {/* Chart 1: Repo vs Workflows/Deployments */}
           <div className="flex-1" style={{ minWidth: 0 }}>
             <h3 className="text-lg font-semibold mb-2">Workflows and Deployments</h3>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart
-                data={data?.repositories?.map(r => ({
+                data={repositories.map(r => ({
                   name: r.name,
                   total_workflows: r.total_workflows,
                   successful_deployments: r.successful_deployments,
@@ -161,7 +178,7 @@ const ProjectsAgGrid: React.FC = () => {
             <h3 className="text-lg font-semibold mb-2">Total Deployment Time (min)</h3>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart
-                data={data?.repositories?.map(r => ({
+                data={repositories.map(r => ({
                   name: r.name,
                   total_deployment_time_min: Math.round(r.total_deployment_time / 60000),
                   total_deployment_time_label: formatTime(r.total_deployment_time),
@@ -182,10 +199,11 @@ const ProjectsAgGrid: React.FC = () => {
             </ResponsiveContainer>
           </div>
         </div>
-        </div>
-      </div>
-      </div>
-    </>
+            </section>
+          </>
+        )}
+      </main>
+    </div>
   );
 };
 
