@@ -25,7 +25,7 @@ const Header = () => {
           className="flex w-fit items-center gap-3 transition-opacity hover:opacity-90"
         >
           <img
-            src="/logo.png"
+            src="https://cdn.therama.dev/apps/public/logo.png"
             alt="The Rama Dev"
             className="h-9 w-9 rounded-xl ring-1 ring-white/20"
           />
