@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useAssetUrl } from '@/hooks/useAssetUrl';
+import { useAssetUrl, useStorageAssetUrl } from '@/hooks/useAssetUrl';
 
 interface ReadmeDialogProps {
   title: string;
@@ -15,6 +15,7 @@ const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onO
   // Extract just the path part if a full URL is provided
   const cleanReadmeUrl = readmeUrl.replace(/^https?:\/\/[^/]+\//, '');
   const s3Url = useAssetUrl(cleanReadmeUrl);
+  const fallbackUrl = useStorageAssetUrl(cleanReadmeUrl);
 
   useEffect(() => {
     if (open && s3Url) {
@@ -30,17 +31,22 @@ const ReadmeDialog: React.FC<ReadmeDialogProps> = ({ title, readmeUrl, open, onO
       return;
     }
 
-    try {
-      const response = await fetch(s3Url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+    // CDN first; Supabase Storage if the CDN fails or CORS blocks the request.
+    for (const url of [s3Url, fallbackUrl]) {
+      if (!url) continue;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const text = await response.text();
+        setReadme(text || 'No README content available.');
+        return;
+      } catch (error) {
+        console.warn(`README not loaded from ${url}`, error);
       }
-      const text = await response.text();
-      setReadme(text || 'No README content available.');
-    } catch (error) {
-      console.error('Error fetching README:', error);
-      setReadme('Failed to load README. Please try again later.');
     }
+    setReadme('Failed to load README. Please try again later.');
   };
 
   return (

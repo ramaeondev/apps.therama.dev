@@ -168,11 +168,27 @@ export default {
 };
 
 // ---------------------------------------------------------------------------
-// Public files (project screenshots, READMEs) in the Storage bucket "uploads".
+// Public files (project screenshots, READMEs). Served from the Cloudflare R2 CDN
+// (https://cdn.therama.dev/apps/...), copied there from the Supabase Storage bucket
+// "uploads", which stays available as a fallback.
 // Paths are stored relative, e.g. "images/apps-therama-dev-large.png" or "readme/apps.therama.dev.md".
 
+export const CDN_BASE = ((import.meta.env.VITE_CDN_BASE_URL as string | undefined) ?? 'https://cdn.therama.dev/apps').replace(/\/$/, '');
+
+function cleanPath(path: string): string {
+  return path.replace(/^https?:\/\/[^/]+\//, '').replace(/^\/+/, '');
+}
+
+const encodePath = (p: string) => p.split('/').map(encodeURIComponent).join('/');
+
+/** CDN URL for a project asset (screenshot or README). */
 export function assetUrl(path: string): string | null {
   if (!path) return null;
-  const clean = path.replace(/^https?:\/\/[^/]+\//, '').replace(/^\/+/, '');
-  return `${SUPABASE_URL.replace(/\/$/, '')}/storage/v1/object/public/uploads/${clean}`;
+  return `${CDN_BASE}/${encodePath(cleanPath(path))}`;
+}
+
+/** Same asset in Supabase Storage: fallback when the CDN can't be reached (or CORS blocks a fetch). */
+export function storageAssetUrl(path: string): string | null {
+  if (!path) return null;
+  return `${SUPABASE_URL.replace(/\/$/, '')}/storage/v1/object/public/uploads/${encodePath(cleanPath(path))}`;
 }
