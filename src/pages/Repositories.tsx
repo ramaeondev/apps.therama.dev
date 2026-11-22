@@ -171,7 +171,7 @@ const Repositories = () => {
   return (
     <AppShell>
       <PageHeader
-        eyebrow="Operations / repositories"
+        eyebrow="Operations / projects"
         title="Project registry"
         description="Every Vercel project behind the portfolio, with its mapping to a portfolio entry."
         actions={
