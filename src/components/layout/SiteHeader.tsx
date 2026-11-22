@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { House, Menu, Monitor, Moon, Sun, X } from 'lucide-react';
+import { Boxes, House, Menu, Monitor, Moon, Sun, Workflow, X } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme-value';
 import { cn } from '@/lib/utils';
 import projectsData from '@/assets/projects.json';
@@ -9,10 +9,8 @@ const LOGO_SRC = 'https://cdn.therama.dev/apps/public/logo.png';
 
 const navItems = [
   { to: '/', label: 'Overview', icon: House },
-  // `Repositories` and `Deployments` are temporarily hidden from the nav: the
-  // GitHub Actions data behind them no longer reflects reality because every
-  // deployment now ships through Vercel. The routes still resolve so old links
-  // keep working; they will return once the Vercel-backed feed lands.
+  { to: '/projects', label: 'Projects', icon: Boxes },
+  { to: '/deployments', label: 'Deployments', icon: Workflow },
 ];
 
 const themeOptions = [

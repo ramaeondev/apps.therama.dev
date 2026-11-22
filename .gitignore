@@ -25,3 +25,8 @@ dist-ssr
 .agents
 .glowup
 .playwright-mcp
+
+# Throwaway Playwright inspection scripts (reference `playwright`, which is not
+# a dependency of this project - run them with a global/local install only)
+inspect.mjs
+verify.mjs

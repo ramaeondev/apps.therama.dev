@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry, type ColDef, type ICellRendererParams } from 'ag-grid-community';
-import { AlertCircle, ExternalLink, Search, Workflow } from 'lucide-react';
+import { AlertCircle, ExternalLink, Rocket, Search } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
 import PageHeader from '@/components/layout/PageHeader';
 import MetricCard from '@/components/layout/MetricCard';
@@ -13,26 +13,30 @@ import ChartFrame from '@/components/charts/ChartFrame';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fetchWorkflowLogs, queryKeys } from '@/services/operationsApi';
-import type { WorkflowLog } from '@/types/logs';
+import {
+  fetchDeploymentHistory,
+  fetchProjectDeploymentSummaries,
+  queryKeys,
+  type Deployment,
+  type ProjectDeploymentSummary,
+} from '@/services/operationsApi';
 import { useAgGridTheme, defaultColDef, gridPagination } from '@/lib/agGridTheme';
 import {
   durationAxisUnit,
   formatDateTime,
-  formatDuration,
   formatDurationCompact,
   formatNumber,
+  formatRate,
+  formatRelative,
   truncateLabel,
 } from '@/lib/format';
-import { conclusionPresentation } from '@/lib/status';
+import { deploymentStatePresentation } from '@/lib/status';
 import { cn } from '@/lib/utils';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-type WorkflowRow = WorkflowLog & { repository: string };
-
-const ConclusionCell = ({ value }: ICellRendererParams<WorkflowRow>) => {
-  const presentation = conclusionPresentation(value);
+const StateCell = ({ value }: ICellRendererParams<Deployment>) => {
+  const presentation = deploymentStatePresentation(value);
   return (
     <span
       className={cn(
@@ -46,140 +50,219 @@ const ConclusionCell = ({ value }: ICellRendererParams<WorkflowRow>) => {
   );
 };
 
-const RepositoryCell = ({ value }: ICellRendererParams<WorkflowRow>) =>
+const EnvironmentCell = ({ data }: ICellRendererParams<Deployment>) =>
+  data?.is_production ? (
+    <span className="inline-flex items-center rounded-md bg-action-soft px-2 py-0.5 text-[0.68rem] font-semibold text-action-soft-ink">
+      Production
+    </span>
+  ) : (
+    <span className="inline-flex items-center rounded-md bg-surface-2 px-2 py-0.5 text-[0.68rem] font-medium text-ink-muted">
+      Preview
+    </span>
+  );
+
+const ProjectCell = ({ value }: ICellRendererParams<Deployment>) =>
   value ? <span className="truncate font-medium text-ink">{value}</span> : null;
 
-const WorkflowUrlCell = ({ value }: ICellRendererParams<WorkflowRow>) =>
-  value ? (
+const CommitCell = ({ data }: ICellRendererParams<Deployment>) => {
+  if (!data) return null;
+  const message = (data.commit_message ?? '').split('\n')[0];
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <span className="tabular shrink-0 rounded bg-surface-2 px-1.5 py-0.5 text-[0.68rem] text-ink-muted">
+        {data.github_sha ? data.github_sha.slice(0, 7) : '—'}
+      </span>
+      <span className="truncate text-ink" title={data.commit_message}>
+        {message || '—'}
+      </span>
+    </span>
+  );
+};
+
+const DurationCell = ({ data }: ICellRendererParams<Deployment>) => {
+  const seconds = data?.build_duration_seconds ?? data?.duration_in_seconds;
+  return (
+    <span className="tabular text-ink">
+      {typeof seconds === 'number' ? formatDurationCompact(seconds * 1000) : '—'}
+    </span>
+  );
+};
+
+const DeploymentLinkCell = ({ data }: ICellRendererParams<Deployment>) => {
+  const href = data?.deployment_url || data?.inspector_url;
+  if (!href) return null;
+  return (
     <a
-      href={value}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center gap-1 font-medium text-action hover:underline"
     >
-      View
+      {data?.deployment_url ? 'Visit' : 'Logs'}
       <ExternalLink className="h-3 w-3" aria-hidden="true" />
     </a>
-  ) : null;
+  );
+};
+
+type EnvironmentFilter = 'all' | 'production' | 'preview';
+
 
 const Deployments = () => {
   const gridTheme = useAgGridTheme();
   const [search, setSearch] = useState('');
+  const [environment, setEnvironment] = useState<EnvironmentFilter>('all');
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: queryKeys.workflowLogs,
-    queryFn: fetchWorkflowLogs,
+  const deploymentsQuery = useQuery({
+    queryKey: queryKeys.deployments,
+    queryFn: () => fetchDeploymentHistory(),
     staleTime: 2 * 60_000,
   });
 
-  const repositories = useMemo(() => data?.repositories ?? [], [data]);
+  const summariesQuery = useQuery({
+    queryKey: queryKeys.deploymentSummaries,
+    queryFn: fetchProjectDeploymentSummaries,
+    staleTime: 5 * 60_000,
+  });
 
-  /** Flatten every repository's workflow logs into grid rows. */
-  const allLogs = useMemo<WorkflowRow[]>(
-    () =>
-      repositories.flatMap((repo) =>
-        (repo.workflow_logs ?? []).map((log) => ({ ...log, repository: repo.name })),
-      ),
-    [repositories],
+  const deployments = useMemo(() => deploymentsQuery.data ?? [], [deploymentsQuery.data]);
+  const summaries = useMemo(() => summariesQuery.data ?? [], [summariesQuery.data]);
+
+  const isLoading = deploymentsQuery.isLoading || summariesQuery.isLoading;
+  const isError = deploymentsQuery.isError || summariesQuery.isError;
+  const refetch = () => {
+    void deploymentsQuery.refetch();
+    void summariesQuery.refetch();
+  };
+
+  /** Only projects that have actually deployed are interesting here. */
+  const activeProjects = useMemo(
+    () => summaries.filter((project) => project.total_deployments > 0),
+    [summaries],
   );
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return allLogs;
-    return allLogs.filter(
-      (log) =>
-        log.repository.toLowerCase().includes(term) ||
-        log.workflow.toLowerCase().includes(term) ||
-        (log.branch ?? '').toLowerCase().includes(term) ||
-        (log.actor ?? '').toLowerCase().includes(term),
-    );
-  }, [allLogs, search]);
+    return deployments.filter((deployment) => {
+      if (environment === 'production' && !deployment.is_production) return false;
+      if (environment === 'preview' && deployment.is_production) return false;
+      if (!term) return true;
+      return (
+        (deployment.project_name ?? '').toLowerCase().includes(term) ||
+        (deployment.github_repo ?? '').toLowerCase().includes(term) ||
+        (deployment.github_ref ?? '').toLowerCase().includes(term) ||
+        (deployment.actor ?? '').toLowerCase().includes(term) ||
+        (deployment.commit_message ?? '').toLowerCase().includes(term) ||
+        (deployment.state ?? '').toLowerCase().includes(term)
+      );
+    });
+  }, [deployments, environment, search]);
 
-  const totals = useMemo(
-    () =>
-      repositories.reduce(
-        (acc, repo) => ({
-          successful: acc.successful + repo.successful_deployments,
-          failed: acc.failed + repo.failed_deployments,
-          time: acc.time + repo.total_deployment_time,
-        }),
-        { successful: 0, failed: 0, time: 0 },
-      ),
-    [repositories],
-  );
+  const totals = useMemo(() => {
+    const ready = deployments.filter((d) => (d.state ?? '').toUpperCase() === 'READY').length;
+    const failed = deployments.filter((d) => (d.state ?? '').toUpperCase() === 'ERROR').length;
+    const production = deployments.filter((d) => d.is_production).length;
+    const durations = deployments
+      .map((d) => d.build_duration_seconds ?? d.duration_in_seconds)
+      .filter((value): value is number => typeof value === 'number');
+    const average = durations.length
+      ? durations.reduce((sum, value) => sum + value, 0) / durations.length
+      : null;
+    return { ready, failed, production, average };
+  }, [deployments]);
 
-  const columnDefs = useMemo<ColDef<WorkflowRow>[]>(
+
+  const columnDefs = useMemo<ColDef<Deployment>[]>(
     () => [
       {
-        field: 'repository',
-        headerName: 'Repository',
+        field: 'project_name',
+        headerName: 'Project',
         minWidth: 170,
-        flex: 1.4,
-        cellRenderer: RepositoryCell,
+        flex: 1.3,
+        cellRenderer: ProjectCell,
       },
-      { field: 'workflow', headerName: 'Workflow', minWidth: 160, flex: 1.3 },
-      { field: 'branch', headerName: 'Branch', minWidth: 120 },
-      { field: 'conclusion', headerName: 'Conclusion', minWidth: 130, cellRenderer: ConclusionCell },
       {
-        field: 'created_at',
-        headerName: 'Created',
+        field: 'is_production',
+        headerName: 'Environment',
+        minWidth: 130,
+        cellRenderer: EnvironmentCell,
+      },
+      { field: 'state', headerName: 'State', minWidth: 115, cellRenderer: StateCell },
+      {
+        field: 'commit_message',
+        headerName: 'Commit',
+        minWidth: 300,
+        flex: 2,
+        cellRenderer: CommitCell,
+      },
+      { field: 'github_ref', headerName: 'Branch', minWidth: 120, flex: 0.8 },
+      { field: 'actor', headerName: 'Author', minWidth: 120, flex: 0.8 },
+      {
+        field: 'deployment_time',
+        headerName: 'Deployed',
         minWidth: 165,
         valueFormatter: (params) => formatDateTime(params.value),
       },
       {
-        field: 'duration',
-        headerName: 'Duration',
-        minWidth: 105,
+        field: 'build_duration_seconds',
+        headerName: 'Build',
+        minWidth: 100,
         type: 'numericColumn',
-        valueFormatter: (params) => formatDuration(params.value),
+        cellRenderer: DurationCell,
       },
-      { field: 'actor', headerName: 'Actor', minWidth: 120 },
       {
-        field: 'url',
-        headerName: 'Run',
-        minWidth: 80,
+        field: 'deployment_url',
+        headerName: 'Link',
+        minWidth: 95,
         sortable: false,
-        filter: false,
-        cellRenderer: WorkflowUrlCell,
+        cellRenderer: DeploymentLinkCell,
       },
     ],
     [],
   );
 
-  const chartData = useMemo(
+  const volumeData = useMemo(
     () =>
-      repositories.map((repo) => ({
-        name: truncateLabel(repo.name, 16),
-        successful: repo.successful_deployments,
-        failed: repo.failed_deployments,
-        workflows: repo.total_workflows,
+      activeProjects.map((project: ProjectDeploymentSummary) => ({
+        name: truncateLabel(project.project_name, 16),
+        deployments: project.total_deployments,
+        production: project.production_deployments,
       })),
-    [repositories],
+    [activeProjects],
   );
 
-  const timeData = useMemo(() => {
-    const longest = repositories.reduce((max, repo) => Math.max(max, repo.total_deployment_time), 0);
-    const { divisor, unit } = durationAxisUnit(longest);
+  const outcomeData = useMemo(
+    () =>
+      activeProjects.map((project) => ({
+        name: truncateLabel(project.project_name, 16),
+        successful: project.successful_deployments,
+        failed: project.failed_deployments,
+      })),
+    [activeProjects],
+  );
+
+  const durationData = useMemo(() => {
+    const longest = activeProjects.reduce(
+      (max, project) => Math.max(max, project.avg_duration_in_seconds ?? 0),
+      0,
+    );
+    const { divisor, unit } = durationAxisUnit(longest * 1000);
     return {
       unit,
-      rows: repositories.map((repo) => ({
-        name: truncateLabel(repo.name, 16),
-        duration: Math.round((repo.total_deployment_time / divisor) * 10) / 10,
+      rows: activeProjects.map((project) => ({
+        name: truncateLabel(project.project_name, 16),
+        duration: Math.round((((project.avg_duration_in_seconds ?? 0) * 1000) / divisor) * 10) / 10,
       })),
     };
-  }, [repositories]);
-
-  const resolved = totals.successful + totals.failed;
-  const successRate = resolved > 0 ? Math.round((totals.successful / resolved) * 100) : null;
+  }, [activeProjects]);
 
   return (
     <AppShell>
       <PageHeader
         eyebrow="Operations / deployments"
         title="Deployment activity"
-        description="Inspect workflow outcomes, branch context and delivery time without leaving the operational workspace."
+        description="Every production and preview deployment across the portfolio, synced from Vercel."
         actions={
-          <Button variant="outline" onClick={() => void refetch()} disabled={isLoading}>
+          <Button variant="outline" onClick={refetch} disabled={isLoading}>
             Refresh data
           </Button>
         }
@@ -201,79 +284,103 @@ const Deployments = () => {
           tone="danger"
           icon={<AlertCircle className="h-5 w-5" />}
           title="Deployment activity unavailable"
-          description="The operations API did not respond. Retry, or check the function logs if this persists."
+          description="The deployments service did not respond. Retry, or check the Vercel sync service if this persists."
           action={
-            <Button variant="outline" onClick={() => void refetch()}>
+            <Button variant="outline" onClick={refetch}>
               Try again
             </Button>
           }
         />
-      ) : allLogs.length === 0 ? (
+      ) : deployments.length === 0 ? (
         <StatePanel
           className="mt-8"
-          icon={<Workflow className="h-5 w-5" />}
-          title="No workflow runs recorded"
-          description="Workflow runs will appear here as soon as a repository publishes a deployment."
+          icon={<Rocket className="h-5 w-5" />}
+          title="No deployments recorded"
+          description="Deployments appear here as soon as Vercel reports one for a mapped project."
         />
       ) : (
         <>
           <section className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Deployment summary">
             <MetricCard
-              label="Workflow runs"
-              value={formatNumber(allLogs.length)}
-              detail="Runs in this response"
+              label="Deployments"
+              value={formatNumber(deployments.length)}
+              detail={`Across ${activeProjects.length} projects`}
               tone="action"
             />
             <MetricCard
-              label="Successful"
-              value={formatNumber(totals.successful)}
-              detail="Completed deployments"
+              label="Production"
+              value={formatNumber(totals.production)}
+              detail={`${formatRate(totals.production, deployments.length)} of all deployments`}
+              tone="info"
+            />
+            <MetricCard
+              label="Ready"
+              value={formatNumber(totals.ready)}
+              detail={totals.failed > 0 ? `${formatNumber(totals.failed)} failed` : 'No failed deployments'}
               tone="success"
             />
             <MetricCard
-              label="Failed"
-              value={formatNumber(totals.failed)}
-              detail={successRate !== null ? `${100 - successRate}% of resolved runs` : 'Runs needing attention'}
-              tone="danger"
-            />
-            <MetricCard
-              label="Delivery time"
-              value={formatDurationCompact(totals.time)}
-              detail="Combined deployment time"
-              tone="info"
+              label="Average build"
+              value={totals.average !== null ? formatDurationCompact(totals.average * 1000) : '—'}
+              detail="Mean build duration"
+              tone="warn"
             />
           </section>
 
           <DataPanel
             className="mt-6"
-            title="Workflow runs"
-            description={`${filtered.length} of ${allLogs.length} runs`}
+            title="Deployments"
+            description={`${filtered.length} of ${deployments.length} deployments`}
             flush
             toolbar={
-              <div className="relative w-full sm:w-72">
-                <Search
-                  className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint"
-                  aria-hidden="true"
-                />
-                <Input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Filter by repo, workflow, branch…"
-                  aria-label="Filter workflow runs"
-                  className="h-9 pl-8 text-sm"
-                />
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                <div
+                  className="flex items-center gap-0.5 rounded-lg bg-surface-2 p-0.5"
+                  role="group"
+                  aria-label="Filter by environment"
+                >
+                  {(['all', 'production', 'preview'] as const).map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setEnvironment(value)}
+                      aria-pressed={environment === value}
+                      className={cn(
+                        'rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors duration-200',
+                        environment === value
+                          ? 'bg-surface text-ink shadow-sm'
+                          : 'text-ink-muted hover:text-ink',
+                      )}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+                <div className="relative w-full sm:w-64">
+                  <Search
+                    className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint"
+                    aria-hidden="true"
+                  />
+                  <Input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Filter by project, branch, commit…"
+                    aria-label="Filter deployments"
+                    className="h-9 pl-8 text-sm"
+                  />
+                </div>
               </div>
             }
           >
-            <div style={{ height: 470 }}>
-              <AgGridReact<WorkflowRow>
+            <div style={{ height: 500 }}>
+              <AgGridReact<Deployment>
                 theme={gridTheme}
                 rowData={filtered}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 animateRows
                 {...gridPagination}
-                overlayNoRowsTemplate="<span style='font-size:12px;color:var(--ink-muted)'>No runs match this filter.</span>"
+                overlayNoRowsTemplate="<span style='font-size:12px;color:var(--ink-muted)'>No deployments match this filter.</span>"
               />
             </div>
           </DataPanel>
@@ -283,34 +390,106 @@ const Deployments = () => {
               index="01 / Analysis"
               id="deployment-charts-heading"
               title="Deployment metrics"
-              description="Outcome mix and time spent per repository."
+              description="Volume, outcome mix and build time per project."
             />
             <div className="mt-6 grid gap-5 lg:grid-cols-2">
               <DataPanel>
                 <ChartFrame
-                  title="Deployments by outcome"
-                  description="Successful versus failed runs."
-                  data={chartData}
+                  title="Deployments by project"
+                  description="Total deployments, with the production share highlighted."
+                  data={volumeData}
                   rotatedLabels
                   yLabel="Count"
                   series={[
-                    { key: 'successful', label: 'Successful', color: 'var(--chart-2)' },
-                    { key: 'failed', label: 'Failed', color: 'var(--chart-4)' },
-                    { key: 'workflows', label: 'Workflows', color: 'var(--chart-5)' },
+                    { key: 'deployments', label: 'All', color: 'var(--chart-5)' },
+                    { key: 'production', label: 'Production', color: 'var(--chart-1)' },
                   ]}
                 />
               </DataPanel>
               <DataPanel>
                 <ChartFrame
-                  title="Total deployment time"
-                  description={`Combined time spent delivering each repository, in ${timeData.unit}.`}
-                  data={timeData.rows}
+                  title="Deployments by outcome"
+                  description="Successful versus failed deployments."
+                  data={outcomeData}
                   rotatedLabels
-                  yLabel={timeData.unit}
-                  series={[{ key: 'duration', label: 'Deployment time', color: 'var(--chart-3)' }]}
+                  yLabel="Count"
+                  series={[
+                    { key: 'successful', label: 'Successful', color: 'var(--chart-2)' },
+                    { key: 'failed', label: 'Failed', color: 'var(--chart-4)' },
+                  ]}
+                />
+              </DataPanel>
+              <DataPanel className="lg:col-span-2">
+                <ChartFrame
+                  title="Average build time"
+                  description={`Mean build duration per project, in ${durationData.unit}.`}
+                  data={durationData.rows}
+                  rotatedLabels
+                  yLabel={durationData.unit}
+                  series={[{ key: 'duration', label: 'Average build', color: 'var(--chart-3)' }]}
                 />
               </DataPanel>
             </div>
+          </section>
+
+          <section className="mt-10" aria-labelledby="project-summary-heading">
+            <SectionHeading
+              index="02 / Projects"
+              id="project-summary-heading"
+              title="Per-project activity"
+              description="Deployment totals and the most recent release for each project."
+              aside={
+                <span className="tabular rounded-md bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-muted">
+                  {activeProjects.length} active
+                </span>
+              }
+            />
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {activeProjects.map((project) => (
+                <li
+                  key={project.project_id}
+                  className="rounded-xl border border-line bg-surface p-4 transition-colors duration-200 hover:border-line-strong"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="truncate text-sm font-semibold text-ink" title={project.project_name}>
+                      {project.project_name}
+                    </p>
+                    <span className="tabular shrink-0 rounded-md bg-surface-2 px-2 py-0.5 text-[0.68rem] font-medium text-ink-muted">
+                      {formatNumber(project.total_deployments)}
+                    </span>
+                  </div>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                    <div className="flex gap-1.5">
+                      <dt className="text-ink-faint">Production</dt>
+                      <dd className="tabular text-ink">{formatNumber(project.production_deployments)}</dd>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <dt className="text-ink-faint">Failed</dt>
+                      <dd
+                        className={cn(
+                          'tabular',
+                          project.failed_deployments > 0 ? 'text-danger-soft-ink' : 'text-ink',
+                        )}
+                      >
+                        {formatNumber(project.failed_deployments)}
+                      </dd>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <dt className="text-ink-faint">Avg</dt>
+                      <dd className="tabular text-ink">
+                        {project.avg_duration_in_seconds !== null
+                          ? formatDurationCompact(project.avg_duration_in_seconds * 1000)
+                          : '—'}
+                      </dd>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <dt className="text-ink-faint">Last</dt>
+                      <dd className="truncate text-ink">{formatRelative(project.last_deployed_at)}</dd>
+                    </div>
+                  </dl>
+                </li>
+              ))}
+            </ul>
           </section>
         </>
       )}

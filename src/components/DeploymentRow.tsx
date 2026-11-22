@@ -22,7 +22,10 @@ const DeploymentRow = ({ deployment, statusLookup }: DeploymentRowProps) => {
     >
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="tabular text-sm font-semibold text-ink">v{deployment.version}</span>
+          {/* version is set by hand and is often empty, so only show it when present */}
+          {deployment.version ? (
+            <span className="tabular text-sm font-semibold text-ink">v{deployment.version}</span>
+          ) : null}
           {status ? (
             <span
               className={cn(
@@ -73,6 +76,10 @@ const DeploymentRow = ({ deployment, statusLookup }: DeploymentRowProps) => {
           <dt className="shrink-0 text-ink-faint">Duration</dt>
           <dd className="tabular text-ink">{deployment.duration_in_seconds}s</dd>
         </div>
+        <div className="flex gap-1.5">
+          <dt className="shrink-0 text-ink-faint">Target</dt>
+          <dd className="truncate text-ink">{deployment.target || '—'}</dd>
+        </div>
         <div className="flex gap-1.5 sm:col-span-2">
           <dt className="shrink-0 text-ink-faint">Commit</dt>
           <dd className="min-w-0 text-ink">
@@ -80,19 +87,41 @@ const DeploymentRow = ({ deployment, statusLookup }: DeploymentRowProps) => {
             {deployment.commit_message}
           </dd>
         </div>
+        {deployment.error_message ? (
+          <div className="flex gap-1.5 sm:col-span-2">
+            <dt className="shrink-0 text-ink-faint">Error</dt>
+            <dd className="min-w-0 text-danger-soft-ink">
+              {deployment.error_code ? `${deployment.error_code}: ` : ''}
+              {deployment.error_message}
+            </dd>
+          </div>
+        ) : null}
       </dl>
 
-      {deployment.deployment_url ? (
-        <a
-          href={deployment.deployment_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-action hover:underline"
-        >
-          Open deployment
-          <ExternalLink className="h-3 w-3" aria-hidden="true" />
-        </a>
-      ) : null}
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        {deployment.deployment_url ? (
+          <a
+            href={deployment.deployment_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-action hover:underline"
+          >
+            Open deployment
+            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+          </a>
+        ) : null}
+        {deployment.inspector_url ? (
+          <a
+            href={deployment.inspector_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-action hover:underline"
+          >
+            Build logs
+            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+          </a>
+        ) : null}
+      </div>
     </li>
   );
 };

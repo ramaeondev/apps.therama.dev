@@ -124,3 +124,33 @@ export function conclusionPresentation(conclusion?: string | null) {
   }
   return { label: conclusion || '—', tone: 'neutral' as const, ...outcomeClasses.neutral };
 }
+
+/**
+ * Vercel deployment state -> short label + tone.
+ *
+ * `state` is the raw Vercel `readyState` and is deliberately separate from the
+ * project `status` column, which still holds the project's own status name
+ * (e.g. "Production") so the legacy badges keep working.
+ */
+export function deploymentStatePresentation(state?: string | null) {
+  const value = (state ?? '').trim().toUpperCase();
+
+  switch (value) {
+    case 'READY':
+      return { label: 'Ready', tone: 'success' as const, ...outcomeClasses.success };
+    case 'ERROR':
+      return { label: 'Error', tone: 'danger' as const, ...outcomeClasses.danger };
+    case 'BUILDING':
+      return { label: 'Building', tone: 'warn' as const, pill: 'bg-warn-soft text-warn-soft-ink ring-1 ring-inset ring-warn/30', dot: 'bg-warn', border: 'border-warn/30' };
+    case 'INITIALIZING':
+      return { label: 'Initializing', tone: 'warn' as const, pill: 'bg-warn-soft text-warn-soft-ink ring-1 ring-inset ring-warn/30', dot: 'bg-warn', border: 'border-warn/30' };
+    case 'QUEUED':
+      return { label: 'Queued', tone: 'neutral' as const, ...outcomeClasses.neutral };
+    case 'CANCELED':
+      return { label: 'Canceled', tone: 'neutral' as const, ...outcomeClasses.neutral };
+    case 'DELETED':
+      return { label: 'Deleted', tone: 'neutral' as const, ...outcomeClasses.neutral };
+    default:
+      return { label: state || '—', tone: 'neutral' as const, ...outcomeClasses.neutral };
+  }
+}
