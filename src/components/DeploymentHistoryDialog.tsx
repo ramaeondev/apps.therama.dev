@@ -1,30 +1,20 @@
-
-import React, { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-
-interface Deployment {
-  id: string;
-  project_id: string;
-  version: string;
-  status: string;
-  deployment_time: string;
-  github_sha: string;
-  github_ref: string;
-  actor: string;
-  commit_message: string;
-  source: string;
-  deployment_url: string;
-  duration_in_seconds: number;
-  is_success: boolean;
-  created_at: string;
-}
-
-interface StatusAPI {
-  id: string;
-  name: string;
-  description: string;
-  class: string;
-}
+import { AlertCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import DeploymentRow from './DeploymentRow';
+import {
+  fetchDeploymentHistory,
+  fetchEdgeProjectStatuses,
+  queryKeys,
+} from '@/services/operationsApi';
 
 interface DeploymentHistoryDialogProps {
   projectId: string;
@@ -33,123 +23,85 @@ interface DeploymentHistoryDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const DeploymentHistoryDialog: React.FC<DeploymentHistoryDialogProps> = ({
+const DeploymentHistoryDialog = ({
   projectId,
   title,
   open,
   onOpenChange,
-}) => {
-  const [deployments, setDeployments] = useState<Deployment[]>([]);
-  const [statuses, setStatuses] = useState<Record<string, StatusAPI>>({});
-  const [loading, setLoading] = useState(true);
+}: DeploymentHistoryDialogProps) => {
+  const deploymentsQuery = useQuery({
+    queryKey: queryKeys.deploymentHistory(projectId),
+    queryFn: () => fetchDeploymentHistory(projectId),
+    enabled: open,
+    staleTime: 60_000,
+  });
 
-  useEffect(() => {
-    if (!open) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    // Fetch deployments and project statuses in parallel
-    Promise.all([
-      fetch(`https://api.therama.dev/functions/v1/get-deployment-history?project_id=${projectId}`).then(res => res.json()),
-      fetch('https://api.therama.dev/functions/v1/get-project-statuses').then(res => res.json()),
-    ])
-      .then(([deploymentsData, statusesData]) => {
-        setDeployments(deploymentsData);
-        const statusArr: StatusAPI[] = statusesData.statuses || [];
-        const statusMap: Record<string, StatusAPI> = {};
-        statusArr.forEach((s) => { statusMap[s.id] = s; });
-        setStatuses(statusMap);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [open, projectId]);
+  const statusesQuery = useQuery({
+    queryKey: queryKeys.edgeStatuses,
+    queryFn: fetchEdgeProjectStatuses,
+    enabled: open,
+    staleTime: 5 * 60_000,
+  });
 
-  const findStatusByName = (statusName: string, statuses: Record<string, StatusAPI>): StatusAPI | undefined => {
-    return Object.values(statuses).find(status => status.name === statusName);
-  };
+  const deployments = deploymentsQuery.data ?? [];
+  const isLoading = deploymentsQuery.isLoading || statusesQuery.isLoading;
+
+  /** The edge API returns a status list keyed by id; match by name. */
+  const findStatusByName = (statusName: string) =>
+    (statusesQuery.data ?? []).find((status) => status.name === statusName);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-        <DialogHeader>
-          <DialogTitle className="text-gray-900 dark:text-white">{title} - Deployment History</DialogTitle>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader className="pr-10">
+          <DialogTitle className="text-pretty">{title} — Deployment history</DialogTitle>
+          <DialogDescription>
+            Every recorded deployment for this project, newest first.
+          </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 mt-4">
-          {loading ? (
-            <p className="text-center text-gray-500 dark:text-gray-400">Loading deployments…</p>
-          ) : deployments.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400">No deployment history available</p>
-          ) : (
-            deployments.map((deployment) => {
-              // Find project status by name
-              const projectStatusObj = findStatusByName(deployment.status, statuses);
 
-              // Base colors for light/dark mode
-              const successLight = 'border-green-200 bg-green-50 text-gray-900';
-              const successDark = 'border-green-800 bg-green-900/30 text-white';
-              const failureLight = 'border-red-200 bg-red-50 text-gray-900';
-              const failureDark = 'border-red-800 bg-red-900/30 text-white';
-
-              const cardClasses = deployment.is_success
-                ? `border rounded-md mb-2 p-4 ${successLight} dark:${successDark}`
-                : `border rounded-md mb-2 p-4 ${failureLight} dark:${failureDark}`;
-
-              return (
-                <div key={deployment.id} className={cardClasses}>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-semibold">Version {deployment.version}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{new Date(deployment.deployment_time).toLocaleString()}</span>
+        <div className="-mx-1 min-h-[12rem] overflow-y-auto pr-1">
+          {isLoading ? (
+            <div className="space-y-3" aria-busy="true" aria-live="polite">
+              <span className="sr-only">Loading deployments…</span>
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="rounded-lg border border-line p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <Skeleton className="h-3.5 w-24" />
+                    <Skeleton className="h-3 w-32" />
                   </div>
-                  <div className="mt-2 text-sm">
-                    <p><span className="font-medium">Actor:</span> {deployment.actor}</p>
-                    <p><span className="font-medium">Source:</span> {deployment.source}</p>
-                    <p><span className="font-medium">Git Ref:</span> {deployment.github_ref}</p>
-                    <p><span className="font-medium">Commit SHA:</span> {deployment.github_sha}</p>
-                    <p><span className="font-medium">Commit:</span> {deployment.commit_message}</p>
-
-                    {/* Project status - from the status field in deployment */}
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="font-medium">Project Status:</span>
-                      {projectStatusObj ? (
-                        <span
-                          className={`px-2 py-0.5 rounded-full font-semibold text-xs ${projectStatusObj.class.split(' ')[0]} text-white`}
-                          title={projectStatusObj.description}
-                        >
-                          {projectStatusObj.name}
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-full font-semibold text-xs bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                          {deployment.status}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Deployment status - from is_success field */}
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="font-medium">Deployment Status:</span>
-                      <span className={`px-2 py-0.5 rounded-full font-semibold text-xs ${deployment.is_success
-                          ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
-                          : 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
-                        }`}>
-                        {deployment.is_success ? 'Success' : 'Failed'}
-                      </span>
-                    </div>
-
-                    <p className="mt-2">
-                      <span className="font-medium">Deployed URL:</span>{' '}
-                      <a
-                        href={deployment.deployment_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                      >
-                        {deployment.deployment_url}
-                      </a>
-                    </p>
-                    <p><span className="font-medium">Duration:</span> {deployment.duration_in_seconds}s</p>
-                  </div>
+                  <Skeleton className="mt-3 h-3 w-full" />
+                  <Skeleton className="mt-2 h-3 w-3/4" />
                 </div>
-              );
-            })
+              ))}
+            </div>
+          ) : deploymentsQuery.isError ? (
+            <div role="alert" className="flex flex-col items-center gap-3 py-10 text-center">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-danger/10 text-danger">
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <p className="text-sm font-medium text-ink">Could not load deployments</p>
+              <Button variant="outline" size="sm" onClick={() => void deploymentsQuery.refetch()}>
+                Try again
+              </Button>
+            </div>
+          ) : deployments.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-10 text-center">
+              <p className="text-sm font-medium text-ink">No deployments recorded yet</p>
+              <p className="text-xs text-ink-muted">
+                Deployment history appears here after the first successful release.
+              </p>
+            </div>
+          ) : (
+            <ol className="space-y-3">
+              {deployments.map((deployment) => (
+                <DeploymentRow
+                  key={deployment.id}
+                  deployment={deployment}
+                  statusLookup={findStatusByName}
+                />
+              ))}
+            </ol>
           )}
         </div>
       </DialogContent>

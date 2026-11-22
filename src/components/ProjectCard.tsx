@@ -1,17 +1,17 @@
-
-import React, { useState } from 'react';
-import { Github, EyeOff, ExternalLink, Clock, Info, Calendar, FileText } from 'lucide-react';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
+import { CalendarDays, EyeOff, ExternalLink, FileText, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ReadmeDialog from './ReadmeDialog';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { format } from 'date-fns';
 import DeploymentHistoryDialog from './DeploymentHistoryDialog';
 import StatusBadge from './StatusBadge';
+import BrandIcon from './BrandIcon';
 import { useAssetUrl } from '@/hooks/useAssetUrl';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { formatRelative } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
-interface ProjectCardProps {
+export interface ProjectCardProps {
   featured?: boolean;
   id: string;
   title: string;
@@ -19,10 +19,7 @@ interface ProjectCardProps {
   technologies: string[];
   githubUrl: string;
   previewUrl: string;
-  images: {
-    web: string;
-    mobile: string;
-  };
+  images: { web: string; mobile: string };
   isPublic: boolean;
   readmeUrl: string;
   version: string;
@@ -32,7 +29,7 @@ interface ProjectCardProps {
   lastDeployedAt?: string;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({
+const ProjectCard = ({
   featured = false,
   id,
   title,
@@ -48,153 +45,155 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   statusClass,
   statusDescription,
   lastDeployedAt,
-}) => {
+}: ProjectCardProps) => {
   const isMobile = useIsMobile();
-  // Public URL for the image (web or mobile) in the Supabase "uploads" bucket
   const resolvedImageUrl = useAssetUrl(isMobile ? images.mobile : images.web);
 
   const [showDeployDialog, setShowDeployDialog] = useState(false);
   const [showReadmeDialog, setShowReadmeDialog] = useState(false);
 
-  const formattedDate = lastDeployedAt
-    ? format(new Date(lastDeployedAt), 'MMM dd, yyyy h:mm a')
-    : 'Not deployed yet';
+  const techList = Array.isArray(technologies) ? technologies : [];
 
   return (
-    <Card className={`group relative flex h-full flex-col overflow-hidden border-slate-200/80 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-xl hover:shadow-violet-950/5 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:border-violet-500/40 ${featured ? 'lg:grid lg:grid-cols-[1.25fr_1fr]' : ''}`}>
-      <CardHeader className={`p-4 pb-0 sm:p-5 ${featured ? 'lg:p-6' : ''}`}>
-        <div className={`w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 ${featured ? 'aspect-[16/9] lg:aspect-auto lg:h-full' : 'aspect-video'}`}>
-          {/* Grey background shows while the image loads */}
+    <article
+      className={cn(
+        'group relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface',
+        'transition-[border-color,box-shadow,transform] duration-300 ease-smooth',
+        'hover:-translate-y-0.5 hover:border-line-strong hover:shadow-[0_12px_32px_-12px_rgb(0_0_0/0.14)]',
+        featured && 'lg:grid lg:grid-cols-[1.15fr_1fr]',
+      )}
+    >
+      <div
+        className={cn(
+          'relative overflow-hidden bg-surface-2',
+          featured ? 'aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[22rem]' : 'aspect-[16/10]',
+        )}
+      >
+        {resolvedImageUrl ? (
           <img
-            src={resolvedImageUrl || ""}
-            alt={title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-            style={{ minHeight: 100 }}
+            src={resolvedImageUrl}
+            alt={`${title} interface preview`}
+            loading={featured ? 'eager' : 'lazy'}
+            className="h-full w-full object-cover transition-transform duration-500 ease-smooth group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-xs text-ink-faint">
+            No preview available
+          </div>
+        )}
+        <span className="tabular absolute left-3 top-3 rounded-md bg-black/55 px-2 py-1 text-[0.65rem] font-medium text-white backdrop-blur-sm">
+          v{version}
+        </span>
+      </div>
+
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-start justify-between gap-3">
+          <h3
+            className={cn(
+              'text-pretty font-semibold leading-tight tracking-[-0.02em] text-ink',
+              featured ? 'text-2xl sm:text-[1.75rem]' : 'text-lg',
+            )}
+          >
+            {title}
+          </h3>
+          <StatusBadge
+            statusName={statusName}
+            statusClass={statusClass}
+            statusDescription={statusDescription}
+            className="mt-1 shrink-0"
           />
         </div>
-        <div className={`mt-4 flex items-start justify-between gap-4 ${featured ? 'lg:hidden' : ''}`}>
-          <h3 className={`${featured ? 'text-2xl sm:text-3xl' : 'text-xl'} font-semibold leading-tight tracking-[-0.03em] text-slate-950 dark:text-gray-100`}>{title}</h3>
-          <div className="flex shrink-0 items-center gap-1 text-xs text-slate-500 dark:text-gray-400">
-            <Clock className="h-3 w-3" />
-            <span>v{version}</span>
-          </div>
-        </div>
-      </CardHeader>
 
-      <CardContent className={`flex flex-grow flex-col gap-0 p-4 pt-2 sm:p-5 sm:pt-3 ${featured ? 'lg:p-6' : ''}`}>
-        {featured ? (
-          <div className="mb-4 hidden items-start justify-between gap-4 lg:flex">
-            <h3 className="text-3xl font-semibold leading-tight tracking-[-0.04em] text-slate-950 dark:text-gray-100">{title}</h3>
-            <div className="flex shrink-0 items-center gap-1 text-xs text-slate-500 dark:text-gray-400">
-              <Clock className="h-3 w-3" />
-              <span>v{version}</span>
-            </div>
-          </div>
-        ) : null}
-        {/* Always show StatusBadge right below title */}
-        <StatusBadge
-          statusName={statusName}
-          statusClass={statusClass}
-          statusDescription={statusDescription}
-        />
-
-        {/* Description w/ minimal space above and below */}
         <p
-          className={`${featured ? 'text-base leading-7' : 'text-sm'} mt-2 line-clamp-3 text-slate-600 dark:text-slate-300`}
+          className={cn(
+            'mt-2.5 line-clamp-3 text-pretty leading-6 text-ink-muted',
+            featured ? 'text-[0.95rem]' : 'text-sm',
+          )}
           title={description}
-          style={{ minHeight: featured ? 70 : 40 }}
         >
           {description}
         </p>
 
-        {/* Tech badges */}
-        <div className="mb-3 mt-4 flex flex-wrap gap-1.5">
-          {Array.isArray(technologies) && technologies.length > 0 ? (
-            technologies.map(tech => (
-              <span
+        {techList.length > 0 ? (
+          <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Technologies">
+            {techList.map((tech) => (
+              <li
                 key={tech}
-                className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700 dark:bg-violet-500/10 dark:text-violet-200"
+                className="rounded-md bg-surface-2 px-2 py-0.5 text-[0.7rem] font-medium text-ink-muted"
               >
                 {tech}
-              </span>
-            ))
-          ) : (
-            <span className="text-xs text-slate-400 dark:text-slate-500">No technologies listed</span>
-          )}
-        </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 text-xs text-ink-faint">No technologies listed</p>
+        )}
 
-        {/* Deployed date info */}
-        <div className="mb-4 mt-0 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-          <Calendar className="h-3 w-3" />
-          <span>Last deployed: {formattedDate}</span>
-        </div>
+        <p className="mt-4 flex items-center gap-1.5 text-xs text-ink-faint">
+          <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+          <span>
+            Deployed <time dateTime={lastDeployedAt}>{formatRelative(lastDeployedAt)}</time>
+          </span>
+        </p>
 
-        {/* Buttons */}
-        <div className="mt-auto grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {/* GitHub Button */}
+        {/* Actions */}
+        <div className="mt-auto grid grid-cols-2 gap-2 pt-5 sm:grid-cols-4">
           {isPublic ? (
             <Button
               variant="outline"
               size="sm"
-              className="h-10 justify-center gap-1"
-              onClick={() => window.open(githubUrl, '_blank')}
+              className="h-9 gap-1.5 px-2"
+              onClick={() => window.open(githubUrl, '_blank', 'noopener,noreferrer')}
             >
-              <Github className="h-4 w-4" />
-              <span className="hidden md:inline">GitHub</span>
+              <BrandIcon brand="github" size={15} />
+              <span className="sr-only sm:not-sr-only">Code</span>
             </Button>
           ) : (
-            <TooltipProvider>
+            <TooltipProvider delayDuration={200}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-10 justify-center gap-1"
-                    disabled
-                  >
-                    <EyeOff className="h-4 w-4" />
-                    <span className="hidden md:inline">Private</span>
+                  <Button variant="outline" size="sm" className="h-9 gap-1.5 px-2" disabled>
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only sm:not-sr-only">Private</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>This is a private repository</p>
-                </TooltipContent>
+                <TooltipContent>This is a private repository</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           )}
 
-          {/* Preview Button */}
           <Button
             variant="default"
             size="sm"
-            className="h-10 justify-center gap-1"
-            onClick={() => window.open(previewUrl, '_blank')}
+            className="h-9 gap-1.5 px-2"
+            onClick={() => window.open(previewUrl, '_blank', 'noopener,noreferrer')}
           >
-            <ExternalLink className="h-4 w-4" />
-            <span className="hidden md:inline">Preview</span>
+            <ExternalLink className="h-4 w-4" aria-hidden="true" />
+            <span className="sr-only sm:not-sr-only">Live</span>
           </Button>
-          {/* README Button */}
+
           <Button
             variant="outline"
             size="sm"
-            className="h-10 justify-center gap-1"
+            className="h-9 gap-1.5 px-2"
             onClick={() => setShowReadmeDialog(true)}
           >
-            <FileText className="h-4 w-4" />
-            <span className="hidden md:inline">README</span>
+            <FileText className="h-4 w-4" aria-hidden="true" />
+            <span className="sr-only sm:not-sr-only">Readme</span>
           </Button>
-          {/* Deployments Button */}
+
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 h-8 justify-center gap-1"
+            className="h-9 gap-1.5 px-2"
             onClick={() => setShowDeployDialog(true)}
           >
-            <Info className="h-4 w-4" />
-            <span className="hidden md:inline">Deployments</span>
+            <History className="h-4 w-4" aria-hidden="true" />
+            <span className="sr-only sm:not-sr-only">History</span>
           </Button>
         </div>
-      </CardContent>
+      </div>
+
       <ReadmeDialog
         title={title}
         readmeUrl={readmeUrl}
@@ -207,7 +206,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         open={showDeployDialog}
         onOpenChange={setShowDeployDialog}
       />
-    </Card>
+    </article>
   );
 };
 

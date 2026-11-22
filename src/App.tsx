@@ -1,40 +1,72 @@
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '@/hooks/use-theme';
+import { Toaster } from '@/components/ui/sonner';
+import Portfolio from '@/pages/Portfolio';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Projects from "./pages/Projects";
-import Deployments from "./pages/Deployments";
-import NotFound from "./pages/NotFound";
-import { ThemeProvider } from "./hooks/use-theme";
-import ProjectGrid from "./pages/ProjectGrid";
-import RawLogs from "./pages/RawLogs";
-import Repos from "./pages/Repos";
-import ProjectsAgGrid from "./pages/ProjectsAgGrid";
-import DeploymentsAgGrid from "./pages/DeploymentsAgGrid";
+/**
+ * The portfolio is the landing route, so it stays in the main bundle. The two
+ * operational workspaces pull in AG Grid and Recharts, which are large, so they
+ * are code-split and only fetched when visited.
+ */
+const Repositories = lazy(() => import('@/pages/Repositories'));
+const Deployments = lazy(() => import('@/pages/Deployments'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+/** Neutral route-level fallback; each page renders its own skeletons. */
+const RouteFallback = () => (
+  <div className="flex min-h-dvh items-center justify-center bg-canvas" role="status" aria-live="polite">
+    <span className="sr-only">Loading page…</span>
+    <span
+      className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-action"
+      aria-hidden="true"
+    />
+  </div>
+);
 
 const App = () => (
-  <ThemeProvider defaultTheme="light">
+  <ThemeProvider defaultTheme="system">
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-[#0b0b16] dark:text-slate-100">
-            <Routes>
-              <Route path="/" element={<Projects />} />
-              <Route path="/projects" element={<ProjectsAgGrid />} />
-              <Route path="/deployments" element={<DeploymentsAgGrid />} />
-              {/* <Route path="/raw-logs" element={<RawLogs />} />
-              <Route path="/repo-stats" element={<Repos />} /> */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-        </BrowserRouter>
-      </TooltipProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Portfolio />} />
+          <Route
+            path="/projects"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <Repositories />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/deployments"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <Deployments />
+              </Suspense>
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <NotFound />
+              </Suspense>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+      <Toaster />
     </QueryClientProvider>
   </ThemeProvider>
 );
