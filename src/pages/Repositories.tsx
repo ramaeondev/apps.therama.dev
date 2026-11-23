@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AgGridReact } from 'ag-grid-react';
-import { AllCommunityModule, ModuleRegistry, type ColDef, type ICellRendererParams } from 'ag-grid-community';
 import { AlertCircle, Boxes, ExternalLink, Search } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
 import PageHeader from '@/components/layout/PageHeader';
@@ -10,6 +8,7 @@ import DataPanel from '@/components/layout/DataPanel';
 import SectionHeading from '@/components/layout/SectionHeading';
 import StatePanel from '@/components/layout/StatePanel';
 import ChartFrame from '@/components/charts/ChartFrame';
+import { DataTable, type DataTableColumn } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,7 +17,6 @@ import {
   queryKeys,
   type VercelProject,
 } from '@/services/operationsApi';
-import { useAgGridTheme, defaultColDef, gridPagination } from '@/lib/agGridTheme';
 import {
   formatDateTime,
   formatNumber,
@@ -26,42 +24,41 @@ import {
   formatRelative,
   truncateLabel,
 } from '@/lib/format';
-import { cn } from '@/lib/utils';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
-
-const ProjectNameCell = ({ data }: ICellRendererParams<VercelProject>) => {
-  if (!data) return null;
-  const label = data.static_project_title ?? data.vercel_project_name;
+const ProjectCell = ({ project }: { project: VercelProject }) => {
+  const label = project.static_project_title ?? project.vercel_project_name;
   return (
     <span className="flex min-w-0 flex-col">
-      <span className="truncate font-medium text-ink" title={label}>
+      <span className="max-w-[240px] truncate font-medium text-ink" title={label}>
         {label}
       </span>
-      <span className="truncate text-[0.68rem] text-ink-faint" title={data.vercel_project_name}>
-        {data.vercel_project_name}
+      <span
+        className="max-w-[240px] truncate text-[0.68rem] text-ink-faint"
+        title={project.vercel_project_name}
+      >
+        {project.vercel_project_name}
       </span>
     </span>
   );
 };
 
-const DomainCell = ({ data }: ICellRendererParams<VercelProject>) => {
-  if (!data?.production_domain) return <span className="text-ink-faint">—</span>;
+const DomainCell = ({ project }: { project: VercelProject }) => {
+  if (!project.production_domain) return <span className="text-ink-faint">—</span>;
   return (
     <a
-      href={`https://${data.production_domain}`}
+      href={`https://${project.production_domain}`}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex min-w-0 items-center gap-1 font-medium text-action hover:underline"
     >
-      <span className="truncate">{data.production_domain}</span>
+      <span className="max-w-[220px] truncate">{project.production_domain}</span>
       <ExternalLink className="h-3 w-3 shrink-0" aria-hidden="true" />
     </a>
   );
 };
 
-const MappingCell = ({ data }: ICellRendererParams<VercelProject>) =>
-  data?.is_mapped ? (
+const MappingCell = ({ project }: { project: VercelProject }) =>
+  project.is_mapped ? (
     <span className="inline-flex items-center rounded-md bg-success-soft px-2 py-0.5 text-[0.68rem] font-semibold text-success-soft-ink">
       Mapped
     </span>
@@ -71,12 +68,7 @@ const MappingCell = ({ data }: ICellRendererParams<VercelProject>) =>
     </span>
   );
 
-const NumberCell = ({ value }: ICellRendererParams<VercelProject>) => (
-  <span className="tabular">{formatNumber(value)}</span>
-);
-
 const Repositories = () => {
-  const gridTheme = useAgGridTheme();
   const [search, setSearch] = useState('');
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -111,47 +103,69 @@ const Repositories = () => {
     [projects],
   );
 
-  const columnDefs = useMemo<ColDef<VercelProject>[]>(
+  const columns = useMemo<DataTableColumn<VercelProject>[]>(
     () => [
       {
-        field: 'static_project_title',
-        headerName: 'Project',
-        minWidth: 230,
-        flex: 2,
-        cellRenderer: ProjectNameCell,
+        id: 'project',
+        header: 'Project',
+        className: 'min-w-[230px]',
+        cell: (project) => <ProjectCell project={project} />,
+        sortValue: (project) => project.static_project_title ?? project.vercel_project_name,
       },
       {
-        field: 'production_domain',
-        headerName: 'Domain',
-        minWidth: 200,
-        flex: 1.4,
-        cellRenderer: DomainCell,
-      },
-      { field: 'framework', headerName: 'Framework', minWidth: 120 },
-      {
-        field: 'is_mapped',
-        headerName: 'Portfolio',
-        minWidth: 115,
-        cellRenderer: MappingCell,
+        id: 'domain',
+        header: 'Domain',
+        className: 'min-w-[200px] max-w-[260px]',
+        cell: (project) => <DomainCell project={project} />,
+        sortValue: (project) => project.production_domain,
       },
       {
-        field: 'total_deployments',
-        headerName: 'Deployments',
-        minWidth: 130,
-        type: 'numericColumn',
-        cellRenderer: NumberCell,
+        id: 'framework',
+        header: 'Framework',
+        className: 'min-w-[120px]',
+        cell: (project) => (
+          <span className="block truncate text-ink-muted">{project.framework || '—'}</span>
+        ),
+        sortValue: (project) => project.framework,
       },
       {
-        field: 'last_deployed_at',
-        headerName: 'Last deployed',
-        minWidth: 150,
-        valueFormatter: (params) => formatRelative(params.value),
+        id: 'portfolio',
+        header: 'Portfolio',
+        className: 'min-w-[115px]',
+        cell: (project) => <MappingCell project={project} />,
+        sortValue: (project) => (project.is_mapped ? 1 : 0),
       },
       {
-        field: 'last_production_success_at',
-        headerName: 'Last production',
-        minWidth: 165,
-        valueFormatter: (params) => formatDateTime(params.value),
+        id: 'deployments',
+        header: 'Deployments',
+        align: 'right',
+        className: 'min-w-[130px]',
+        cell: (project) => (
+          <span className="tabular">{formatNumber(project.total_deployments)}</span>
+        ),
+        sortValue: (project) => project.total_deployments,
+      },
+      {
+        id: 'last_deployed_at',
+        header: 'Last deployed',
+        className: 'min-w-[150px]',
+        cell: (project) => (
+          <span className="whitespace-nowrap text-ink-muted">
+            {formatRelative(project.last_deployed_at)}
+          </span>
+        ),
+        sortValue: (project) => project.last_deployed_at,
+      },
+      {
+        id: 'last_production_success_at',
+        header: 'Last production',
+        className: 'min-w-[165px]',
+        cell: (project) => (
+          <span className="whitespace-nowrap text-ink-muted">
+            {formatDateTime(project.last_production_success_at)}
+          </span>
+        ),
+        sortValue: (project) => project.last_production_success_at,
       },
     ],
     [],
@@ -256,17 +270,15 @@ const Repositories = () => {
               </div>
             }
           >
-            <div style={{ height: 440 }}>
-              <AgGridReact<VercelProject>
-                theme={gridTheme}
-                rowData={filtered}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                animateRows
-                {...gridPagination}
-                overlayNoRowsTemplate="<span style='font-size:12px;color:var(--ink-muted)'>No projects match this filter.</span>"
-              />
-            </div>
+            <DataTable
+              rows={filtered}
+              columns={columns}
+              getRowId={(project) => project.vercel_project_id}
+              caption="Vercel projects and their portfolio mappings"
+              emptyMessage="No projects match this filter."
+              maxHeightClassName="max-h-[420px]"
+              minWidthClassName="min-w-[1120px]"
+            />
           </DataPanel>
 
           <section className="mt-10" aria-labelledby="repo-charts-heading">

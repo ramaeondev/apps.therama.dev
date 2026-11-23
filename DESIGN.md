@@ -24,7 +24,7 @@ The redesign is a **reframe** of the presentation layer, not a rewrite of the pr
 - **Home job:** understand the creator, scan the strongest work, then inspect individual projects.
 - **Home focal region:** a compact editorial hero followed by one featured project and a responsive archive grid.
 - **Operational job:** scan current deployment/repository health, then filter and inspect dense records.
-- **Operational focal region:** page header and KPI strip, followed by the primary AG Grid and supporting charts.
+- **Operational focal region:** page header and KPI strip, followed by the primary data table and supporting charts.
 - **Navigation:** replace icon-only navigation with named links and a compact mobile menu. Keep the external `therama.dev` brand link and existing URL paths.
 - **Phone order:** brand and menu first, page context second, primary content third, secondary metrics/charts after the main table or project content.
 - **Signature treatment:** a small uppercase “signal” label and a vertical accent rule shared by page introductions; status and metric colors remain semantic and text-labeled.

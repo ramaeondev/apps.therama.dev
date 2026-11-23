@@ -15,13 +15,10 @@ export default defineConfig({
     },
   },
   build: {
-    // AG Grid is the single largest dependency and is only used by the two
-    // operational routes, so it gets its own long-lived vendor chunk.
     rollupOptions: {
       output: {
         manualChunks: {
           "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-ag-grid": ["ag-grid-community", "ag-grid-react"],
           "vendor-charts": ["recharts"],
           "vendor-query": ["@tanstack/react-query"],
         },

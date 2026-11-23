@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AgGridReact } from 'ag-grid-react';
-import { AllCommunityModule, ModuleRegistry, type ColDef, type ICellRendererParams } from 'ag-grid-community';
 import { AlertCircle, ExternalLink, Rocket, Search } from 'lucide-react';
 import AppShell from '@/components/layout/AppShell';
 import PageHeader from '@/components/layout/PageHeader';
@@ -10,6 +8,7 @@ import DataPanel from '@/components/layout/DataPanel';
 import SectionHeading from '@/components/layout/SectionHeading';
 import StatePanel from '@/components/layout/StatePanel';
 import ChartFrame from '@/components/charts/ChartFrame';
+import { DataTable, type DataTableColumn } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,7 +19,6 @@ import {
   type Deployment,
   type ProjectDeploymentSummary,
 } from '@/services/operationsApi';
-import { useAgGridTheme, defaultColDef, gridPagination } from '@/lib/agGridTheme';
 import {
   durationAxisUnit,
   formatDateTime,
@@ -33,14 +31,12 @@ import {
 import { deploymentStatePresentation } from '@/lib/status';
 import { cn } from '@/lib/utils';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
-
-const StateCell = ({ value }: ICellRendererParams<Deployment>) => {
-  const presentation = deploymentStatePresentation(value);
+const StateCell = ({ deployment }: { deployment: Deployment }) => {
+  const presentation = deploymentStatePresentation(deployment.state);
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[0.68rem] font-semibold',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[0.68rem] font-semibold',
         presentation.pill,
       )}
     >
@@ -50,65 +46,56 @@ const StateCell = ({ value }: ICellRendererParams<Deployment>) => {
   );
 };
 
-const EnvironmentCell = ({ data }: ICellRendererParams<Deployment>) =>
-  data?.is_production ? (
-    <span className="inline-flex items-center rounded-md bg-action-soft px-2 py-0.5 text-[0.68rem] font-semibold text-action-soft-ink">
+const EnvironmentCell = ({ deployment }: { deployment: Deployment }) =>
+  deployment.is_production ? (
+    <span className="inline-flex items-center whitespace-nowrap rounded-md bg-action-soft px-2 py-0.5 text-[0.68rem] font-semibold text-action-soft-ink">
       Production
     </span>
   ) : (
-    <span className="inline-flex items-center rounded-md bg-surface-2 px-2 py-0.5 text-[0.68rem] font-medium text-ink-muted">
+    <span className="inline-flex items-center whitespace-nowrap rounded-md bg-surface-2 px-2 py-0.5 text-[0.68rem] font-medium text-ink-muted">
       Preview
     </span>
   );
 
-const ProjectCell = ({ value }: ICellRendererParams<Deployment>) =>
-  value ? <span className="truncate font-medium text-ink">{value}</span> : null;
-
-const CommitCell = ({ data }: ICellRendererParams<Deployment>) => {
-  if (!data) return null;
-  const message = (data.commit_message ?? '').split('\n')[0];
+const CommitCell = ({ deployment }: { deployment: Deployment }) => {
+  const message = (deployment.commit_message ?? '').split('\n')[0];
   return (
     <span className="flex min-w-0 items-center gap-2">
       <span className="tabular shrink-0 rounded bg-surface-2 px-1.5 py-0.5 text-[0.68rem] text-ink-muted">
-        {data.github_sha ? data.github_sha.slice(0, 7) : '—'}
+        {deployment.github_sha ? deployment.github_sha.slice(0, 7) : '—'}
       </span>
-      <span className="truncate text-ink" title={data.commit_message}>
+      <span className="max-w-[360px] truncate text-ink" title={deployment.commit_message}>
         {message || '—'}
       </span>
     </span>
   );
 };
 
-const DurationCell = ({ data }: ICellRendererParams<Deployment>) => {
-  const seconds = data?.build_duration_seconds ?? data?.duration_in_seconds;
-  return (
-    <span className="tabular text-ink">
-      {typeof seconds === 'number' ? formatDurationCompact(seconds * 1000) : '—'}
-    </span>
-  );
-};
-
-const DeploymentLinkCell = ({ data }: ICellRendererParams<Deployment>) => {
-  const href = data?.deployment_url || data?.inspector_url;
-  if (!href) return null;
+const DeploymentLinkCell = ({ deployment }: { deployment: Deployment }) => {
+  const href = deployment.deployment_url || deployment.inspector_url;
+  if (!href) return <span className="text-ink-faint">—</span>;
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 font-medium text-action hover:underline"
+      className="inline-flex items-center gap-1 whitespace-nowrap font-medium text-action hover:underline"
     >
-      {data?.deployment_url ? 'Visit' : 'Logs'}
+      {deployment.deployment_url ? 'Visit' : 'Logs'}
       <ExternalLink className="h-3 w-3" aria-hidden="true" />
     </a>
   );
 };
 
+/** Vercel build duration, falling back to the total deployment duration. */
+const buildSeconds = (deployment: Deployment): number | null => {
+  const seconds = deployment.build_duration_seconds ?? deployment.duration_in_seconds;
+  return typeof seconds === 'number' ? seconds : null;
+};
+
 type EnvironmentFilter = 'all' | 'production' | 'preview';
 
-
 const Deployments = () => {
-  const gridTheme = useAgGridTheme();
   const [search, setSearch] = useState('');
   const [environment, setEnvironment] = useState<EnvironmentFilter>('all');
 
@@ -162,59 +149,104 @@ const Deployments = () => {
     const failed = deployments.filter((d) => (d.state ?? '').toUpperCase() === 'ERROR').length;
     const production = deployments.filter((d) => d.is_production).length;
     const durations = deployments
-      .map((d) => d.build_duration_seconds ?? d.duration_in_seconds)
-      .filter((value): value is number => typeof value === 'number');
+      .map((d) => buildSeconds(d))
+      .filter((value): value is number => value !== null);
     const average = durations.length
       ? durations.reduce((sum, value) => sum + value, 0) / durations.length
       : null;
     return { ready, failed, production, average };
   }, [deployments]);
 
-
-  const columnDefs = useMemo<ColDef<Deployment>[]>(
+  const columns = useMemo<DataTableColumn<Deployment>[]>(
     () => [
       {
-        field: 'project_name',
-        headerName: 'Project',
-        minWidth: 170,
-        flex: 1.3,
-        cellRenderer: ProjectCell,
+        id: 'project_name',
+        header: 'Project',
+        className: 'min-w-[170px]',
+        cell: (deployment) => (
+          <span
+            className="block max-w-[220px] truncate font-medium text-ink"
+            title={deployment.project_name}
+          >
+            {deployment.project_name || '—'}
+          </span>
+        ),
+        sortValue: (deployment) => deployment.project_name,
       },
       {
-        field: 'is_production',
-        headerName: 'Environment',
-        minWidth: 130,
-        cellRenderer: EnvironmentCell,
-      },
-      { field: 'state', headerName: 'State', minWidth: 115, cellRenderer: StateCell },
-      {
-        field: 'commit_message',
-        headerName: 'Commit',
-        minWidth: 300,
-        flex: 2,
-        cellRenderer: CommitCell,
-      },
-      { field: 'github_ref', headerName: 'Branch', minWidth: 120, flex: 0.8 },
-      { field: 'actor', headerName: 'Author', minWidth: 120, flex: 0.8 },
-      {
-        field: 'deployment_time',
-        headerName: 'Deployed',
-        minWidth: 165,
-        valueFormatter: (params) => formatDateTime(params.value),
+        id: 'is_production',
+        header: 'Environment',
+        className: 'min-w-[130px]',
+        cell: (deployment) => <EnvironmentCell deployment={deployment} />,
+        sortValue: (deployment) => (deployment.is_production ? 1 : 0),
       },
       {
-        field: 'build_duration_seconds',
-        headerName: 'Build',
-        minWidth: 100,
-        type: 'numericColumn',
-        cellRenderer: DurationCell,
+        id: 'state',
+        header: 'State',
+        className: 'min-w-[115px]',
+        cell: (deployment) => <StateCell deployment={deployment} />,
+        sortValue: (deployment) => deployment.state,
       },
       {
-        field: 'deployment_url',
-        headerName: 'Link',
-        minWidth: 95,
-        sortable: false,
-        cellRenderer: DeploymentLinkCell,
+        id: 'commit_message',
+        header: 'Commit',
+        className: 'min-w-[300px] max-w-[420px]',
+        cell: (deployment) => <CommitCell deployment={deployment} />,
+        sortValue: (deployment) => deployment.commit_message,
+      },
+      {
+        id: 'github_ref',
+        header: 'Branch',
+        className: 'min-w-[120px]',
+        cell: (deployment) => (
+          <span className="block max-w-[140px] truncate text-ink-muted">
+            {deployment.github_ref || '—'}
+          </span>
+        ),
+        sortValue: (deployment) => deployment.github_ref,
+      },
+      {
+        id: 'actor',
+        header: 'Author',
+        className: 'min-w-[120px]',
+        cell: (deployment) => (
+          <span className="block max-w-[130px] truncate text-ink-muted">
+            {deployment.actor || '—'}
+          </span>
+        ),
+        sortValue: (deployment) => deployment.actor,
+      },
+      {
+        id: 'deployment_time',
+        header: 'Deployed',
+        className: 'min-w-[165px]',
+        cell: (deployment) => (
+          <span className="whitespace-nowrap text-ink-muted">
+            {formatDateTime(deployment.deployment_time)}
+          </span>
+        ),
+        sortValue: (deployment) => deployment.deployment_time,
+      },
+      {
+        id: 'build_duration_seconds',
+        header: 'Build',
+        align: 'right',
+        className: 'min-w-[100px]',
+        cell: (deployment) => {
+          const seconds = buildSeconds(deployment);
+          return (
+            <span className="tabular text-ink">
+              {seconds !== null ? formatDurationCompact(seconds * 1000) : '—'}
+            </span>
+          );
+        },
+        sortValue: (deployment) => buildSeconds(deployment),
+      },
+      {
+        id: 'deployment_url',
+        header: 'Link',
+        className: 'min-w-[95px]',
+        cell: (deployment) => <DeploymentLinkCell deployment={deployment} />,
       },
     ],
     [],
@@ -372,17 +404,15 @@ const Deployments = () => {
               </div>
             }
           >
-            <div style={{ height: 500 }}>
-              <AgGridReact<Deployment>
-                theme={gridTheme}
-                rowData={filtered}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                animateRows
-                {...gridPagination}
-                overlayNoRowsTemplate="<span style='font-size:12px;color:var(--ink-muted)'>No deployments match this filter.</span>"
-              />
-            </div>
+            <DataTable
+              rows={filtered}
+              columns={columns}
+              getRowId={(deployment) => deployment.id}
+              caption="Deployment history across all projects"
+              emptyMessage="No deployments match this filter."
+              maxHeightClassName="max-h-[460px]"
+              minWidthClassName="min-w-[1240px]"
+            />
           </DataPanel>
 
           <section className="mt-10" aria-labelledby="deployment-charts-heading">
